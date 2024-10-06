@@ -1,29 +1,18 @@
 import { Hono } from "hono";
+import { PrismaClient } from "@prisma/client/edge";
+import { withAccelerate } from "@prisma/extension-accelerate";
+import { decode, sign, verify } from "hono/jwt";
+import { userRouter } from "./routes/user";
+import { blogRouter } from "./routes/blog";
 
-const app = new Hono();
+const app = new Hono<{
+  Bindings: {
+    DATABASE_URL: string;
+    JWT_SECRET: string;
+  };
+}>();
 
-app.post("/api/v1/signup", (c) => {
-  return c.text("Signup route");
-});
-app.post("/api/v1/signin", (c) => {
-  return c.text("Signin route");
-});
-
-app.post("/api/v1/blog", (c) => {
-  return c.text(" Blog route to create");
-});
-app.put("/api/v1/blog", (c) => {
-  return c.text(" Blog route to edit");
-});
-
-app.get("/api/v1/blog/:id", (c) => {
-  const id = c.req.param("id");
-  console.log(id);
-  return c.text("Get blog route");
-});
-
-app.get("/api/v1/blog/bulkx", (c) => {
-  return c.text("Get all the blogs");
-});
+app.route("/api/v1/user", userRouter);
+app.route("/api/v1/blog", blogRouter);
 
 export default app;
