@@ -1,45 +1,35 @@
-import React from "react";
 import BlogCard from "../components/BlogCard";
 import Appbar from "../components/Appbar";
+import { useBlogs } from "../hooks";
 
 const Blogs = () => {
+  const { loading, blogs } = useBlogs();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!blogs.length) {
+    return <div>No blogs available</div>; // To handle cases where no blogs are returned
+  }
+
   return (
-    <div >
-      <Appbar/>
+    <div>
+      <Appbar />
       <div className="flex justify-center">
-    <div className=" max-w-xl">
-      <BlogCard
-        authorName={"Shaikh Aman"}
-        title={"How an Ugly Single-Page Website Makes $5,000 a Month with Affiliate Marketing"}
-        content={"No need to create a fancy and modern website with hundreds of pages to make money online. Making money online is the dream for many people "}
-        publishedDate={"2nd Feb 2024"}
-      />
+        <div>
+          {blogs.map((blog) => (
             <BlogCard
-        authorName={"Shaikh Aman"}
-        title={"How an Ugly Single-Page Website Makes $5,000 a Month with Affiliate Marketing"}
-        content={"No need to create a fancy and modern website with hundreds of pages to make money online. Making money online is the dream for many people "}
-        publishedDate={"2nd Feb 2024"}
-      />
-            <BlogCard
-        authorName={"Shaikh Aman"}
-        title={"How an Ugly Single-Page Website Makes $5,000 a Month with Affiliate Marketing"}
-        content={"No need to create a fancy and modern website with hundreds of pages to make money online. Making money online is the dream for many people "}
-        publishedDate={"2nd Feb 2024"}
-      />
-            <BlogCard
-        authorName={"Shaikh Aman"}
-        title={"How an Ugly Single-Page Website Makes $5,000 a Month with Affiliate Marketing"}
-        content={"No need to create a fancy and modern website with hundreds of pages to make money online. Making money online is the dream for many people "}
-        publishedDate={"2nd Feb 2024"}
-      />
-            <BlogCard
-        authorName={"Shaikh Aman"}
-        title={"How an Ugly Single-Page Website Makes $5,000 a Month with Affiliate Marketing"}
-        content={"No need to create a fancy and modern website with hundreds of pages to make money online. Making money online is the dream for many people "}
-        publishedDate={"2nd Feb 2024"}
-      />
-    </div>
-    </div>
+              key={blog.id}
+              id={blog.id}
+              authorName={blog.author.name || "Anonymous"}
+              title={blog.title}
+              content={blog.content}
+              publishedDate={"2nd Feb 2024"}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

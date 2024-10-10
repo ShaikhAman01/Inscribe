@@ -31,6 +31,7 @@ userRouter.post("/signup", async (c) => {
       data: {
         email: body.username,
         password: body.password,
+        ...(body.name && { name: body.name }),
       },
     });
 
