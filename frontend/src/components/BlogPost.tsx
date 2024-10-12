@@ -1,6 +1,7 @@
 import { Blog } from "../hooks";
 import Appbar from "./Appbar";
 import { Avatar } from "./BlogCard";
+import DOMPurify from "dompurify"; // To sanitize HTML content
 
 const BlogPost = ({ blog }: { blog: Blog }) => {
   return (
@@ -12,7 +13,12 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
           <div className="pt-3 text-lg text-slate-500 font-normal">
             Posted on August 24, 2023
           </div>
-          <div className="pt-3 font-normal text-xl">{blog.content}</div>
+          <div
+            className="pt-3 font-normal text-xl"
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(blog.content),
+            }} // Sanitizing and rendering the HTML
+          ></div>{" "}
         </div>
         <div className=" col-span-4 pl-4">
           <div className="font-medium">Author</div>

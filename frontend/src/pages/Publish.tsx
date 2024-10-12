@@ -31,7 +31,7 @@ const Publish = () => {
         },
       }
     );
-    navigate(`blog/${response.data.id}`);
+    navigate(`/blog/${response.data.id}`);
     console.log("Publishing:", { title, content });
   };
 
@@ -55,12 +55,12 @@ const Publish = () => {
             onChange={(e) => setTitle(e.target.value)}
             className="w-full text-xl p-2 border border-gray-300 rounded-md focus:outline-none "
           />
-          // export textEditor and bring as component
-          <div className="h-64">
+          {/* // export textEditor and bring as component */}
+          <div className="h-72">
             <ReactQuill
               theme="snow"
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={setContent}
               placeholder="Write your blog content here..."
               className="h-full"
             />
