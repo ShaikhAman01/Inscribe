@@ -18,11 +18,18 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
         `${BACKEND_URL}/api/v1/user/${type == "signup" ? "signup" : "signin"}`,
         postInputs
       );
-      const jwt = response.data.jwt;
-      localStorage.setItem("token", jwt);
-      navigate("/blogs");
-    } catch (e) {
-      //alert user
+
+      if (response.data && response.data.jwt) {
+        const { jwt, name } = response.data; 
+        localStorage.setItem("token", jwt);
+        localStorage.setItem("userName", name || ""); 
+        navigate("/blogs");
+      } else {
+        alert("Invalid response from server");
+      }
+    } catch (error) {
+      
+      alert("An error occurred. Please try again.");
     }
   }
 
@@ -51,7 +58,7 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
             {type === "signup" ? (
               <LabelledInput
                 label="Name"
-                placeholder="Shaikh Aman"
+                placeholder="John Doe"
                 onChange={(e) => {
                   setPostInputs({
                     ...postInputs,
@@ -62,7 +69,7 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
             ) : null}
             <LabelledInput
               label="Username"
-              placeholder="ShaikhAman@gmail.com"
+              placeholder="johndoe@gmail.com"
               type={"email"}
               onChange={(e) => {
                 setPostInputs({

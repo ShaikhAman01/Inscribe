@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Avatar } from "./BlogCard";
 
 const Appbar = () => {
+  const name = localStorage.getItem("name") as string;;
   return (
     <div className="border-b flex justify-between px-10 py-2 cursor-pointer">
       <Link
@@ -11,7 +12,10 @@ const Appbar = () => {
         Inkspire
       </Link>
       <div className="flex justify-center items-center">
-        <Link to={"/publish"} className="mr-5 flex items-center hover:text-blue-700 transition-colors duration-200">
+        <Link
+          to={"/publish"}
+          className="mr-5 flex items-center hover:text-blue-700 transition-colors duration-200"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -29,7 +33,7 @@ const Appbar = () => {
           <span className="ml-1">Write</span>
         </Link>
         <div>
-          <Avatar name="Shaikh Aman" size={"big"} />
+          <Avatar name={name} size={"big"} />
         </div>
       </div>
     </div>

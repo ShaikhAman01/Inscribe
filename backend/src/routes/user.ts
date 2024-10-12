@@ -12,7 +12,6 @@ export const userRouter = new Hono<{
 }>();
 
 // todo: hash password
-// todo: add zod validation
 userRouter.post("/signup", async (c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
@@ -23,15 +22,15 @@ userRouter.post("/signup", async (c) => {
   if (!success) {
     c.status(411);
     return c.json({
-        message: "Inputs are incorrect"
-    })
+      message: "Inputs are incorrect",
+    });
   }
   try {
     const user = await prisma.user.create({
       data: {
         email: body.username,
         password: body.password,
-        ...(body.name && { name: body.name }),
+        name: body.name,
       },
     });
 
@@ -41,7 +40,12 @@ userRouter.post("/signup", async (c) => {
       },
       c.env.JWT_SECRET
     );
-    return c.json({ jwt: token });
+    return c.json({
+      jwt: token,
+      user: {
+        name: user.name,
+      },
+    });
   } catch (e) {
     c.status(403);
     return c.json({ error: "Failed to create user" });
@@ -58,8 +62,8 @@ userRouter.post("/signin", async (c) => {
   if (!success) {
     c.status(411);
     return c.json({
-        message: "Inputs are incorrect"
-    })
+      message: "Inputs are incorrect",
+    });
   }
 
   try {
@@ -68,12 +72,17 @@ userRouter.post("/signin", async (c) => {
         email: body.username,
         password: body.password,
       },
+      select: {
+        id:true,
+        name: true,
+      },
     });
 
     if (!user) {
       c.status(400);
-      return c.json({ error: "User not found" });
+      return c.json({ error: "Invalid credentials" });
     }
+
 
     const jwt = await sign(
       {
@@ -81,7 +90,7 @@ userRouter.post("/signin", async (c) => {
       },
       c.env.JWT_SECRET
     );
-    return c.json({ jwt });
+    return c.json({ jwt, name: user.name });
   } catch (e) {
     return c.status(403);
   }

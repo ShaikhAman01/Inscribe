@@ -24,7 +24,7 @@ const BlogCard = ({
           </div>
         </div>
         <div className="font-semibold text-xl pt-2">{title}</div>
-        <div className="font-thin text-md">{content.slice(0, 100) + "..."}</div>
+        <div className="font-thin text-md" >{content.slice(0, 100) + "..."}</div>
         <div className=" text-slate-400 text-sm font-thin pt-4">{`${Math.ceil(
           content.length / 100
         )} min read`}</div>
@@ -40,6 +40,7 @@ export function Avatar({
   name: string;
   size?: "small" | "big";
 }) {
+  const initials = name && name.length > 0 ? name[0] : "U";
   return (
     <div
       className={`relative inline-flex items-center justify-center overflow-hidden bg-gray-600 rounded-full ${
@@ -51,8 +52,8 @@ export function Avatar({
           size === "small" ? "text-xs" : "text-md"
         } text-gray-600 dark:text-gray-300`}
       >
-        {name[0]}
-      </span>
+        {initials}
+        </span>
     </div>
   );
 }

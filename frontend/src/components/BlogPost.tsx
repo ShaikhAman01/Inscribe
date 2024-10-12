@@ -1,12 +1,10 @@
 import { Blog } from "../hooks";
-import Appbar from "./Appbar";
 import { Avatar } from "./BlogCard";
 import DOMPurify from "dompurify"; // To sanitize HTML content
 
 const BlogPost = ({ blog }: { blog: Blog }) => {
   return (
     <div>
-      <Appbar />
       <div className="grid grid-cols-12 xl:px-40 lg:px-20 px-5 w-full pt-10 ">
         <div className=" col-span-12 lg:col-span-8">
           <div className="text-5xl font-black">{blog.title}</div>
