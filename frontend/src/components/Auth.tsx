@@ -3,8 +3,11 @@ import axios from "axios";
 import { ChangeEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../config";
+import { ToastContainer, useToast } from "./Toast";
+
 
 const Auth = ({ type }: { type: "signup" | "signin" }) => {
+  const { showPromiseToast } = useToast();
   const navigate = useNavigate();
   const [postInputs, setPostInputs] = useState<SignupInput>({
     name: "",
@@ -13,24 +16,38 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
   });
 
   async function sendRequest() {
-    try {
-      const response = await axios.post(
-        `${BACKEND_URL}/api/v1/user/${type == "signup" ? "signup" : "signin"}`,
-        postInputs
-      );
+    console.log("Sending request with inputs:", postInputs); // Log inputs before sending
 
+    showPromiseToast(
+      async () => {
+        const response = await axios.post(
+          `${BACKEND_URL}/api/v1/user/${type === "signup" ? "signup" : "signin"}`,
+          postInputs
+        );
+        console.log("Response data:", response.data);
       if (response.data && response.data.jwt) {
         const { jwt, name } = response.data; 
         localStorage.setItem("token", jwt);
-        localStorage.setItem("userName", name || ""); 
-        navigate("/blogs");
+
+        console.log("Name from response:", name);
+        if (name) {
+          localStorage.setItem("name", name);
+        } else {
+          console.warn("Name not received from server");
+        }
+        
+        setTimeout(() => {
+          navigate("/blogs");
+        }, 1000);
+        
       } else {
-        alert("Invalid response from server");
+        throw new Error("Invalid response from server");
       }
-    } catch (error) {
-      
-      alert("An error occurred. Please try again.");
+    },{loading:"Authenticating...",
+      success: `Successfully ${type === "signup" ? "signed up" : "signed in"}!`,
+      error: "Authentication failed. Please try again.",
     }
+    )
   }
 
   return (
@@ -99,6 +116,7 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
           </div>
         </div>
       </div>
+      <ToastContainer/>
     </div>
   );
 };

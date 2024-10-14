@@ -18,6 +18,8 @@ userRouter.post("/signup", async (c) => {
   }).$extends(withAccelerate());
 
   const body = await c.req.json();
+  console.log("Signup request body:", body);
+
   const { success } = signupInput.safeParse(body);
   if (!success) {
     c.status(411);
@@ -25,6 +27,7 @@ userRouter.post("/signup", async (c) => {
       message: "Inputs are incorrect",
     });
   }
+
   try {
     const user = await prisma.user.create({
       data: {
@@ -33,6 +36,7 @@ userRouter.post("/signup", async (c) => {
         name: body.name,
       },
     });
+    console.log("Created user:", user);
 
     const token = await sign(
       {
@@ -40,11 +44,12 @@ userRouter.post("/signup", async (c) => {
       },
       c.env.JWT_SECRET
     );
+
+    console.log("Response being sent:", { jwt: token, name: user.name });
+
     return c.json({
       jwt: token,
-      user: {
-        name: user.name,
-      },
+      name: user.name,
     });
   } catch (e) {
     c.status(403);
@@ -58,6 +63,8 @@ userRouter.post("/signin", async (c) => {
   }).$extends(withAccelerate());
 
   const body = await c.req.json();
+  console.log("Signin request body:", body);
+
   const { success } = signinInput.safeParse(body);
   if (!success) {
     c.status(411);
@@ -78,6 +85,8 @@ userRouter.post("/signin", async (c) => {
       },
     });
 
+    console.log("Found user:", user);
+
     if (!user) {
       c.status(400);
       return c.json({ error: "Invalid credentials" });
@@ -90,8 +99,11 @@ userRouter.post("/signin", async (c) => {
       },
       c.env.JWT_SECRET
     );
+    console.log("Response being sent:", { jwt, name: user.name });
     return c.json({ jwt, name: user.name });
   } catch (e) {
-    return c.status(403);
+    console.error("Error in signin:", e);
+    c.status(403);
+    return c.json({ error: "Authentication failed" });
   }
 });

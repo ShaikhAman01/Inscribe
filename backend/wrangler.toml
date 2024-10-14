@@ -8,6 +8,10 @@ DATABASE_URL="prisma://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsI
 
 JWT_SECRET="mysupersecret"
 
+[observability]
+enabled = true
+head_sampling_rate = 1 # optional. default = 1.
+
 # [[kv_namespaces]]
 # binding = "MY_KV_NAMESPACE"
 # id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

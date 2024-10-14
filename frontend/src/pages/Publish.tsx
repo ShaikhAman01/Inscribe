@@ -6,8 +6,11 @@ import Appbar from "../components/Appbar";
 import axios from "axios";
 import { BACKEND_URL } from "../config";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, useToast } from "../components/Toast";
+import { toast } from "sonner";
 
 const Publish = () => {
+  const { showPromiseToast } = useToast();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const token = localStorage.getItem("token");
@@ -16,23 +19,35 @@ const Publish = () => {
 
   const handlePublish = async () => {
     if (!title.trim() || !content.trim()) {
-      console.log("Please fill in both title and content");
+      toast.info("Please fill in both the inputs");
       return;
     }
-    const response = await axios.post(
-      `${BACKEND_URL}/api/v1/blog`,
-      {
-        title,
-        content,
+    showPromiseToast(
+      async () => {
+        const response = await axios.post(
+          `${BACKEND_URL}/api/v1/blog`,
+          {
+            title,
+            content,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setTimeout(() => {
+          navigate(`/blog/${response.data.id}`);
+          console.log("Publishing:", { title, content });
+        }, 1000);
       },
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        loading: "Creating Post...",
+        success: "Successfully created Post",
+        error: "Error creating post. Please try again.",
       }
     );
-    navigate(`/blog/${response.data.id}`);
-    console.log("Publishing:", { title, content });
   };
 
   return (
@@ -97,6 +112,7 @@ const Publish = () => {
         </div>
       )} */}
       </div>
+      <ToastContainer/>
     </div>
   );
 };
