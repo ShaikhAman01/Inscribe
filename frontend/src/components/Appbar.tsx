@@ -1,17 +1,32 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Avatar } from "./BlogCard";
+import { ToastContainer, useToast } from "./Toast";
 
 const Appbar = () => {
-  const name = localStorage.getItem("name") as string;;
+  const {showToast} = useToast()
+  const name = localStorage.getItem("name") as string;
+  const navigate = useNavigate();
+
+  const LogoutFunction = () => {
+    localStorage.removeItem("name");
+    localStorage.removeItem("token");
+    showToast("Signed out successfully", "success");
+
+    setTimeout(() => {
+      
+      navigate("/signin");
+    }, 1000);
+  };
   return (
-    <div className="border-b flex justify-between px-10 py-2 cursor-pointer">
+    <div className="border-b flex justify-between items-center px-10 py-3 h-16">
       <Link
         to={"/blogs"}
         className="flex justify-center flex-col font-extrabold font-raleway text-blue-900 text-4xl "
       >
-        Inkspire
+        Inkscribe
       </Link>
-      <div className="flex justify-center items-center">
+
+      <div className="flex items-center  space-x-4">
         <Link
           to={"/publish"}
           className="mr-5 flex items-center hover:text-blue-700 transition-colors duration-200"
@@ -32,10 +47,19 @@ const Appbar = () => {
           </svg>
           <span className="ml-1">Write</span>
         </Link>
-        <div>
+        <div className="pr-2 flex items-center">
           <Avatar name={name} size={"big"} />
         </div>
+        <div>
+          <button
+            onClick={LogoutFunction}
+            type="button"
+            className="text-gray-700 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-400 font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 shadow hover:shadow-md">
+            Logout
+          </button>
+        </div>
       </div>
+      <ToastContainer/>
     </div>
   );
 };

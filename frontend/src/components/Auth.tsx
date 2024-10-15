@@ -5,7 +5,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../config";
 import { ToastContainer, useToast } from "./Toast";
 
-
 const Auth = ({ type }: { type: "signup" | "signin" }) => {
   const { showPromiseToast } = useToast();
   const navigate = useNavigate();
@@ -21,33 +20,38 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
     showPromiseToast(
       async () => {
         const response = await axios.post(
-          `${BACKEND_URL}/api/v1/user/${type === "signup" ? "signup" : "signin"}`,
+          `${BACKEND_URL}/api/v1/user/${
+            type === "signup" ? "signup" : "signin"
+          }`,
           postInputs
         );
         console.log("Response data:", response.data);
-      if (response.data && response.data.jwt) {
-        const { jwt, name } = response.data; 
-        localStorage.setItem("token", jwt);
+        if (response.data && response.data.jwt) {
+          const { jwt, name } = response.data;
+          localStorage.setItem("token", jwt);
 
-        console.log("Name from response:", name);
-        if (name) {
-          localStorage.setItem("name", name);
+          console.log("Name from response:", name);
+          if (name) {
+            localStorage.setItem("name", name);
+          } else {
+            console.warn("Name not received from server");
+          }
+
+          setTimeout(() => {
+            navigate("/blogs");
+          }, 1000);
         } else {
-          console.warn("Name not received from server");
+          throw new Error("Invalid response from server");
         }
-        
-        setTimeout(() => {
-          navigate("/blogs");
-        }, 1000);
-        
-      } else {
-        throw new Error("Invalid response from server");
+      },
+      {
+        loading: "Authenticating...",
+        success: `Successfully ${
+          type === "signup" ? "signed up" : "signed in"
+        }!`,
+        error: "Authentication failed. Please try again.",
       }
-    },{loading:"Authenticating...",
-      success: `Successfully ${type === "signup" ? "signed up" : "signed in"}!`,
-      error: "Authentication failed. Please try again.",
-    }
-    )
+    );
   }
 
   return (
@@ -67,7 +71,7 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
                 to={type == "signup" ? "/signin" : "/signup"}
               >
                 {type == "signup" ? "Login" : "signup"}
-              </Link>{" "}
+              </Link>
             </div>
           </div>
 
@@ -116,7 +120,7 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
           </div>
         </div>
       </div>
-      <ToastContainer/>
+      <ToastContainer />
     </div>
   );
 };
