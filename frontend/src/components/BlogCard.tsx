@@ -5,14 +5,14 @@ interface BlogCardProps {
   authorName: string;
   title: string;
   content: string;
-  publishedDate: string;
+  createdAt: string;
 }
 const BlogCard = ({
   id,
   authorName,
   title,
   content,
-  publishedDate,
+  createdAt,
 }: BlogCardProps) => {
 
 
@@ -22,7 +22,7 @@ const BlogCard = ({
         <div className="flex">
           <Avatar name={authorName} />
           <div className="font-extralight pl-2 text-sm flex justify-center flex-col">
-            {`${authorName} · ${publishedDate}`}
+            {`${authorName} · ${createdAt}`}
           </div>
         </div>
         <div className="font-semibold text-xl pt-2">{title}</div>

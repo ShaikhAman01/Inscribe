@@ -1,4 +1,5 @@
 import { Blog } from "../hooks";
+import { formattedDate } from "../utils/FormattedDate";
 import { Avatar } from "./BlogCard";
 import DOMPurify from "dompurify"; // To sanitize HTML content
 
@@ -9,7 +10,8 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
         <div className=" col-span-12 lg:col-span-8">
           <div className="text-5xl font-black">{blog.title}</div>
           <div className="pt-3 text-lg text-slate-500 font-normal">
-            Posted on August 24, 2023
+          {formattedDate(blog.createdAt)}
+
           </div>
           <div
             className="pt-3 font-normal text-xl"

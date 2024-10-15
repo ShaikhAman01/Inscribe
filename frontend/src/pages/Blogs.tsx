@@ -3,6 +3,7 @@ import Appbar from "../components/Appbar";
 import { useBlogs } from "../hooks";
 import BlogSkeleton from "../components/BlogSkeleton";
 import { useEffect, useState } from "react";
+import { formattedDate } from "../utils/FormattedDate";
 // import { Divide } from "lucide-react";
 
 const Blogs = () => {
@@ -15,7 +16,6 @@ const Blogs = () => {
     console.log("Blogs on this page:", currentBlogs);
   }, [currentPage, blogs]);
 
-  
   const stripHtml = (html: string) => {
     return html.replace(/<[^>]*>/g, "");
   };
@@ -26,9 +26,6 @@ const Blogs = () => {
   const currentBlogs = blogs.slice(indexOfFirstBlog, indexOfLastBlog);
 
   const totalPages = Math.ceil(blogs.length / blogsPerPage);
-
-
-  
 
   return (
     <div>
@@ -47,7 +44,7 @@ const Blogs = () => {
                 authorName={blog.author?.name || "Anonymous"}
                 title={blog.title}
                 content={stripHtml(blog.content)}
-                publishedDate={"2nd Feb 2024"}
+                createdAt={formattedDate(blog.createdAt)}
               />
             ))
           ) : (
