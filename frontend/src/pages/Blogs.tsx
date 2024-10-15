@@ -2,40 +2,45 @@ import BlogCard from "../components/BlogCard";
 import Appbar from "../components/Appbar";
 import { useBlogs } from "../hooks";
 import BlogSkeleton from "../components/BlogSkeleton";
-import { Divide } from "lucide-react";
+import { useEffect, useState } from "react";
+// import { Divide } from "lucide-react";
 
 const Blogs = () => {
   const { loading, blogs } = useBlogs();
+  const [currentPage, setCurrentPage] = useState(1);
+  const blogsPerPage = 5;
 
+  useEffect(() => {
+    console.log("Current Page:", currentPage);
+    console.log("Blogs on this page:", currentBlogs);
+  }, [currentPage, blogs]);
+
+  
   const stripHtml = (html: string) => {
     return html.replace(/<[^>]*>/g, "");
   };
 
-  // if (loading) {
-  //   return <div className="flex justify-center mt-10">
-  //     <BlogSkeleton/>
-  //     <BlogSkeleton/>
-  //     <BlogSkeleton/>
-  //     <BlogSkeleton/>
-  //     <BlogSkeleton/>
-  //     </div>;
-  // }
+  //get current blogs
+  const indexOfLastBlog = currentPage * blogsPerPage;
+  const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
+  const currentBlogs = blogs.slice(indexOfFirstBlog, indexOfLastBlog);
 
-  // if (!blogs.length) {
-  //   return <div>No blogs available</div>;
-  // }
+  const totalPages = Math.ceil(blogs.length / blogsPerPage);
+
+
+  
 
   return (
     <div>
       <Appbar />
-      <div className="flex justify-center">
+      <div className="flex justify-center py-10">
         <div>
           {loading ? (
             Array.from({ length: 5 }).map((_, index) => (
               <BlogSkeleton key={index} />
             ))
           ) : blogs.length ? (
-            blogs.map((blog) => (
+            currentBlogs.map((blog) => (
               <BlogCard
                 key={blog.id}
                 id={blog.id}
@@ -48,6 +53,71 @@ const Blogs = () => {
           ) : (
             <div>No Blogs Available</div>
           )}
+
+          {/* //Pagination */}
+          <nav className="flex items-center gap-x-1 justify-center py-5">
+            <button
+              type="button"
+              className="min-h-[38px] min-w-[38px] py-2 px-2.5 inline-flex justify-center items-center gap-x-1.5 text-sm rounded-lg text-gray-800 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              <svg
+                className="shrink-0 size-3.5"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m15 18-6-6 6-6"></path>
+              </svg>
+              <span>Previous</span>
+            </button>
+
+            {Array.from({ length: totalPages }, (_, index) => (
+              <button
+                key={index}
+                className={`px-3 py-1 mx-1 ${
+                  currentPage === index + 1
+                    ? "bg-slate-950  text-white"
+                    : "bg-gray-200"
+                } rounded hover:bg-gray-300`}
+                onClick={() => setCurrentPage(index + 1)}
+              >
+                {index + 1}
+              </button>
+            ))}
+
+            <button
+              type="button"
+              className="min-h-[38px] min-w-[38px] py-2 px-2.5 inline-flex justify-center items-center gap-x-1.5 text-sm rounded-lg text-gray-800 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+            >
+              <span>Next</span>
+              <svg
+                className="shrink-0 size-3.5"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m9 18 6-6-6-6"></path>
+              </svg>
+            </button>
+          </nav>
         </div>
       </div>
     </div>

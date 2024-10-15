@@ -13,7 +13,7 @@ const Blog = () => {
   return (
     <div>
       <Appbar />
-      <div>
+      <div className="mb-10">
         <div>{loading || !blog ? <BlogPostSkeleton /> : <BlogPost blog={blog} />}</div>
       </div>
     </div>

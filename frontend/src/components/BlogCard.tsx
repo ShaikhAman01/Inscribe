@@ -14,6 +14,8 @@ const BlogCard = ({
   content,
   publishedDate,
 }: BlogCardProps) => {
+
+
   return (
     <Link to={`/blog/${id}`}>
       <div className="border-b border-slate-200 pb-4 p-4 w-screen max-w-screen-md cursor-pointer">
@@ -26,7 +28,7 @@ const BlogCard = ({
         <div className="font-semibold text-xl pt-2">{title}</div>
         <div className="font-thin text-md" >{content.slice(0, 100) + "..."}</div>
         <div className=" text-slate-400 text-sm font-thin pt-4">{`${Math.ceil(
-          content.length / 100
+          content.length / 1000
         )} min read`}</div>
       </div>
     </Link>
