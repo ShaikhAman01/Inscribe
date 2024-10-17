@@ -1,30 +1,37 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Avatar } from "./BlogCard";
 import { ToastContainer, useToast } from "./Toast";
+import SearchBar from "./SearchBar";
 
 const Appbar = () => {
-  const {showToast} = useToast()
+  const { showToast } = useToast();
   const name = localStorage.getItem("name") as string;
   const navigate = useNavigate();
 
   const LogoutFunction = () => {
-    localStorage.removeItem("name");
-    localStorage.removeItem("token");
-    showToast("Signed out successfully", "success");
+    if (window.confirm("Are you sure you want to log out?")) {
+      localStorage.removeItem("name");
+      localStorage.removeItem("token");
+      showToast("Signed out successfully", "success");
 
-    setTimeout(() => {
-      
-      navigate("/signin");
-    }, 1000);
+      setTimeout(() => {
+        navigate("/signin");
+      }, 1000);
+    }
   };
   return (
     <div className="border-b flex justify-between items-center px-10 py-3 h-16">
-      <Link
-        to={"/blogs"}
-        className="flex justify-center flex-col font-extrabold font-raleway text-blue-900 text-4xl "
-      >
-        Inkscribe
-      </Link>
+      <div className="flex items-center space-x-6">
+        <Link
+          to={"/blogs"}
+          className=" font-extrabold font-raleway text-blue-900 text-4xl "
+        >
+          Inkscribe
+        </Link>
+        <div className="flex-grow max-w-md ">
+          <SearchBar />
+        </div>
+      </div>
 
       <div className="flex items-center  space-x-4">
         <Link
@@ -54,12 +61,13 @@ const Appbar = () => {
           <button
             onClick={LogoutFunction}
             type="button"
-            className="text-gray-700 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-400 font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 shadow hover:shadow-md">
+            className="text-gray-700 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-400 font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 shadow hover:shadow-md"
+          >
             Logout
           </button>
         </div>
       </div>
-      <ToastContainer/>
+      <ToastContainer />
     </div>
   );
 };
