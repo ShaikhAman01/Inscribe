@@ -8,13 +8,13 @@ import { formattedDate } from "../utils/FormattedDate";
 
 const Blogs = () => {
   const { loading, blogs } = useBlogs();
+  const [filteredBlogs, setFilteredBlogs] = useState(blogs);
   const [currentPage, setCurrentPage] = useState(1);
   const blogsPerPage = 5;
 
   useEffect(() => {
-    console.log("Current Page:", currentPage);
-    console.log("Blogs on this page:", currentBlogs);
-  }, [currentPage, blogs]);
+    setFilteredBlogs(blogs);
+  }, [blogs]);
 
   const stripHtml = (html: string) => {
     return html.replace(/<[^>]*>/g, "");
@@ -23,20 +23,31 @@ const Blogs = () => {
   //get current blogs
   const indexOfLastBlog = currentPage * blogsPerPage;
   const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
-  const currentBlogs = blogs.slice(indexOfFirstBlog, indexOfLastBlog);
+  const currentBlogs = filteredBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
 
-  const totalPages = Math.ceil(blogs.length / blogsPerPage);
+  const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
+
+  const handleSearch = (term: string) => {
+    const searchedBlogs = blogs.filter((blog) =>
+      blog.title.toLowerCase().includes(term.toLowerCase()) ||
+      stripHtml(blog.content).toLowerCase().includes(term.toLowerCase())
+    );
+    setFilteredBlogs(searchedBlogs);
+    setCurrentPage(1);
+  };
+  
 
   return (
     <div>
-      <Appbar />
+      <Appbar onSearch={handleSearch} />
+      ...
       <div className="flex justify-center py-10">
         <div>
           {loading ? (
             Array.from({ length: 5 }).map((_, index) => (
               <BlogSkeleton key={index} />
             ))
-          ) : blogs.length ? (
+          ) : filteredBlogs.length ? (
             currentBlogs.map((blog) => (
               <BlogCard
                 key={blog.id}

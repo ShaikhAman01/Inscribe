@@ -100,8 +100,28 @@ blogRouter.get("/bulk", async (c) => {
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate());
 
+  const searchQuery = c.req.query("q"); // Extract the search query from the request
+
   try {
     const post = await prisma.post.findMany({
+      where: searchQuery
+        ? {
+            OR: [
+              {
+                title: {
+                  contains: searchQuery,
+                  mode: "insensitive", // Case-insensitive search
+                },
+              },
+              {
+                content: {
+                  contains: searchQuery,
+                  mode: "insensitive", // Case-insensitive search
+                },
+              },
+            ],
+          }
+        : {}, // If no search query, return all posts
       select: {
         content: true,
         title: true,
@@ -114,14 +134,16 @@ blogRouter.get("/bulk", async (c) => {
         },
       },
     });
+
     c.status(201);
     return c.json({ post });
   } catch (e) {
-    console.error("Error fetching post", e);
+    console.error("Error fetching posts", e);
     c.status(500);
-    return c.json({ error: "Failed to fetch post" });
+    return c.json({ error: "Failed to fetch posts" });
   }
 });
+
 
 blogRouter.get("/:id", async (c) => {
   const id = c.req.param("id");

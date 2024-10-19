@@ -3,7 +3,7 @@ import { Avatar } from "./BlogCard";
 import { ToastContainer, useToast } from "./Toast";
 import SearchBar from "./SearchBar";
 
-const Appbar = () => {
+const Appbar = ({onSearch}) => {
   const { showToast } = useToast();
   const name = localStorage.getItem("name") as string;
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ const Appbar = () => {
           Inkscribe
         </Link>
         <div className="flex-grow max-w-md ">
-          <SearchBar />
+          <SearchBar onSearch={onSearch} />
         </div>
       </div>
 
