@@ -2,23 +2,40 @@ import { Link, useNavigate } from "react-router-dom";
 import { Avatar } from "./BlogCard";
 import { ToastContainer, useToast } from "./Toast";
 import SearchBar from "./SearchBar";
+import Modal from "./Modal";
+import { useState } from "react";
 
-const Appbar = ({onSearch}) => {
+interface AppbarProps {
+  onSearch: (query: string) => void;
+}
+
+const Appbar: React.FC<AppbarProps> = ({ onSearch }) => {
   const { showToast } = useToast();
   const name = localStorage.getItem("name") as string;
   const navigate = useNavigate();
 
-  const LogoutFunction = () => {
-    if (window.confirm("Are you sure you want to log out?")) {
-      localStorage.removeItem("name");
-      localStorage.removeItem("token");
-      showToast("Signed out successfully", "success");
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
-      setTimeout(() => {
-        navigate("/signin");
-      }, 1000);
-    }
+  const handleLogout = () => {
+    setIsModalVisible(true);
   };
+
+  const confirmLogout = () => {
+    localStorage.removeItem("name");
+    localStorage.removeItem("token");
+    showToast("Signed out successfully", "success");
+
+    setIsModalVisible(false);
+
+    setTimeout(() => {
+      navigate("/signin");
+    }, 1000);
+  };
+
+  const cancalLogout = () => {
+    setIsModalVisible(false);
+  };
+
   return (
     <div className="border-b flex justify-between items-center px-10 py-3 h-16">
       <div className="flex items-center space-x-6">
@@ -59,7 +76,7 @@ const Appbar = ({onSearch}) => {
         </div>
         <div>
           <button
-            onClick={LogoutFunction}
+            onClick={handleLogout}
             type="button"
             className="text-gray-700 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-400 font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 shadow hover:shadow-md"
           >
@@ -67,7 +84,14 @@ const Appbar = ({onSearch}) => {
           </button>
         </div>
       </div>
+
       <ToastContainer />
+
+      <Modal
+        isVisible={isModalVisible}
+        onClose={cancalLogout}
+        onConfirm={confirmLogout}
+      />
     </div>
   );
 };

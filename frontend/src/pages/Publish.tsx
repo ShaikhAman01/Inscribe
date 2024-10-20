@@ -1,5 +1,4 @@
 import { useState } from "react";
-// import { AlertCircle } from "lucide-react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import Appbar from "../components/Appbar";
@@ -9,12 +8,41 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, useToast } from "../components/Toast";
 import { toast } from "sonner";
 
+const MAX_TITLE_LENGTH = 100;
+const MAX_CONTENT_LENGTH = 5000;
+
+const quillStyles = `
+  .ql-container.ql-snow, .ql-toolbar.ql-snow {
+    border: none !important;
+    overflow-y: auto;
+  }
+  .ql-toolbar.ql-snow {
+   border: none !important;
+    padding-left: 0;
+  }
+.ql-editor {
+  font-size: 16px;
+  overflow-y: auto;
+  height: calc(100% - 42px); /* Adjust for toolbar height */
+}
+
+`;
+
+const quillModules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'link'],
+    [{'list': 'ordered'}, {'list': 'bullet'}],
+  ]
+};
+
 const Publish = () => {
   const { showPromiseToast } = useToast();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const token = localStorage.getItem("token");
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
 
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
   const handlePublish = async () => {
@@ -22,25 +50,20 @@ const Publish = () => {
       toast.info("Please fill in both the inputs");
       return;
     }
+
+    if (title.length > MAX_TITLE_LENGTH || content.length > MAX_CONTENT_LENGTH) {
+      toast.error("Title or content exceeds maximum length");
+      return;
+    }
+
     showPromiseToast(
       async () => {
         const response = await axios.post(
           `${BACKEND_URL}/api/v1/blog`,
-          {
-            title,
-            content,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { title, content },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-
-        setTimeout(() => {
-          navigate(`/blog/${response.data.id}`);
-          console.log("Publishing:", { title, content });
-        }, 1000);
+        setTimeout(() => navigate(`/blog/${response.data.id}`), 1000);
       },
       {
         loading: "Creating Post...",
@@ -50,69 +73,76 @@ const Publish = () => {
     );
   };
 
-  return (
-    <div>
-      <Appbar />
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Create a New Blog Post
-        </h1>
+  const togglePreviewMode = () => setIsPreviewMode(!isPreviewMode);
 
-        <div className="space-y-4">
-          <label htmlFor="blog-title" className="sr-only">
-            Blog Title
-          </label>
+  const renderContent = () => {
+    if (isPreviewMode) {
+      return (
+        <div
+          className="p-4 bg-white rounded shadow-md overflow-y-auto"
+          style={{ height: "calc(90vh - 200px)" }}
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      );
+    }
+    return (
+      <div className=" flex flex-col h-full">
+      <ReactQuill
+        theme="snow"
+        value={content}
+        onChange={setContent}
+        placeholder="Write your blog content here..."
+        modules={quillModules}
+        className="h-64 mb-12 border rounded"
+        style={{ height: "400px", border: "none", boxShadow: "none" }}
+      />
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex flex-col h-screen">
+      <style>{quillStyles}</style>
+      <Appbar />
+      <div className="flex-grow overflow-hidden ">
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
           <input
-            id="blog-title"
             type="text"
             placeholder="Enter your blog title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full text-xl p-2 border border-gray-300 rounded-md focus:outline-none "
+            maxLength={MAX_TITLE_LENGTH}
+            className="w-full text-3xl p-3 font-bold focus:outline-none border-b border-gray-200 placeholder-gray-400 mb-4"
           />
-          {/* // export textEditor and bring as component */}
-          <div className="h-72">
-            <ReactQuill
-              theme="snow"
-              value={content}
-              onChange={setContent}
-              placeholder="Write your blog content here..."
-              className="h-full"
-            />
+          <div className="flex-grow overflow-hidden ">
+          {renderContent()}
+        <small
+            className={`text-right block ${
+              content.replace(/<[^>]*>/g, "").length < 3500
+                ? "text-gray-500"
+                : content.replace(/<[^>]*>/g, "").length <= MAX_CONTENT_LENGTH ? "text-yellow-500":"text-red-500"
+            }`}
+          >
+            {content.replace(/<[^>]*>/g, "").length}/{MAX_CONTENT_LENGTH}
+          </small>
           </div>
-        </div>
-
-        <div className="flex justify-between items-center pt-10 ">
+ 
+         
+          <button
+            onClick={togglePreviewMode}
+            className="bg-gray-200 text-gray-800 px-6 py-2 rounded-full hover:bg-gray-300 transition-colors mr-4"
+          >
+            {isPreviewMode ? "Edit" : "Preview"}
+          </button>
           <button
             onClick={handlePublish}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+            className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-colors"
           >
             Publish
           </button>
-          <span className="text-sm text-gray-500">
-            {content.replace(/<[^>]*>/g, "").length} characters
-          </span>
-        </div>
-
-        {/* Conditional Alert Message */}
-        {/* {(!title.trim() || !content.trim()) && (
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4"
-          role="alert"
-        >
-          <div className="flex">
-            <AlertCircle className="h-6 w-6 text-red-500 mr-4" />
-            <div>
-              <p className="font-bold">Warning</p>
-              <p className="text-sm">
-                Please fill in both the title and content before publishing.
-              </p>
-            </div>
-          </div>
-        </div>
-      )} */}
+       </div>
       </div>
-      <ToastContainer/>
+      <ToastContainer />
     </div>
   );
 };
