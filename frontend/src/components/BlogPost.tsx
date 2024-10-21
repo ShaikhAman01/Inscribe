@@ -2,6 +2,7 @@ import { Blog } from "../hooks";
 import { formattedDate } from "../utils/FormattedDate";
 import { Avatar } from "./BlogCard";
 import DOMPurify from "dompurify"; // To sanitize HTML content
+import Comments from "./Comments";
 
 const BlogPost = ({ blog }: { blog: Blog }) => {
   return (
@@ -38,6 +39,9 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
           </div>
         </div>
       </div>
+     
+        <Comments postId={blog.id};
+      
     </div>
   );
 };
