@@ -3,6 +3,7 @@ import { withAccelerate } from "@prisma/extension-accelerate";
 import { createBlogInput, updateBlogInput } from "@shaikhaman/medium-common";
 import { Hono } from "hono";
 import { verify } from "hono/jwt";
+import { authMiddleware } from "../middlewares/auth";
 
 export const blogRouter = new Hono<{
   Bindings: {
@@ -14,22 +15,25 @@ export const blogRouter = new Hono<{
   };
 }>();
 
-blogRouter.use("/*", async (c, next) => {
-  const jwt = c.req.header("Authorization");
-  if (!jwt) {
-    c.status(401);
-    return c.json({ error: "unauthorized" });
-  }
-  const token = jwt.split(" ")[1];
+// blogRouter.use("/*", async (c, next) => {
+//   const jwt = c.req.header("Authorization");
+//   if (!jwt) {
+//     c.status(401);
+//     return c.json({ error: "unauthorized" });
+//   }
+//   const token = jwt.split(" ")[1];
 
-  const payload = await verify(token, c.env.JWT_SECRET);
-  if (!payload || typeof payload.id !== "string") {
-    c.status(401);
-    return c.json({ error: "unauthorized" });
-  }
-  c.set("userId", payload.id);
-  await next();
-});
+//   const payload = await verify(token, c.env.JWT_SECRET);
+//   if (!payload || typeof payload.id !== "string") {
+//     c.status(401);
+//     return c.json({ error: "unauthorized" });
+//   }
+//   c.set("userId", payload.id);
+//   await next();
+// });
+
+blogRouter.use("/*", authMiddleware);
+
 
 blogRouter.post("/", async (c) => {
   const body = await c.req.json();
@@ -94,7 +98,7 @@ blogRouter.put("/", async (c) => {
   }
 });
 
-// todo: add pagination
+
 blogRouter.get("/bulk", async (c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,

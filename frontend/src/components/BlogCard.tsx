@@ -42,7 +42,7 @@ export function Avatar({
   name: string;
   size?: "small" | "big";
 }) {
-  const initials = name && name.length > 0 ? name[0] : "U";
+  const initials = name && name.length > 0 ? name[0].toUpperCase() : "U";
   return (
     <div
       className={`relative inline-flex items-center justify-center overflow-hidden bg-gray-600 rounded-full ${

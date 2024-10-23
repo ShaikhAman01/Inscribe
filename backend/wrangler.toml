@@ -5,7 +5,8 @@ compatibility_flags = [ "nodejs_compat" ]
 
 [vars]
 DATABASE_URL="your-database-url-here"
-JWT_SECRET="${JWT_SECRET}"
+JWT_SECRET="your_jWT_secret"
+
 [observability]
 enabled = true
 

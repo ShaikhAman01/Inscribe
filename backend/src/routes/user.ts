@@ -11,7 +11,19 @@ export const userRouter = new Hono<{
   };
 }>();
 
-// todo: hash password
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode(...new Uint8Array(hash)));
+}
+
+async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+  const hashedInput = await hashPassword(password);
+  return hashedInput === hashedPassword;
+}
+
+
 userRouter.post("/signup", async (c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
@@ -29,10 +41,23 @@ userRouter.post("/signup", async (c) => {
   }
 
   try {
+    const existingUser = await prisma.user.findUnique({
+      where:{
+        email:body.username
+      }
+    })
+
+    if(existingUser){
+      c.status(400);
+        return c.json({error: "User already exists"})
+    }
+
+    const hashedPassword = await hashPassword(body.password);
+
     const user = await prisma.user.create({
       data: {
         email: body.username,
-        password: body.password,
+        password: hashedPassword,
         name: body.name,
       },
     });
@@ -52,6 +77,7 @@ userRouter.post("/signup", async (c) => {
       name: user.name,
     });
   } catch (e) {
+    console.error("Error in signup",e)
     c.status(403);
     return c.json({ error: "Failed to create user" });
   }
@@ -77,18 +103,25 @@ userRouter.post("/signin", async (c) => {
     const user = await prisma.user.findUnique({
       where: {
         email: body.username,
-        password: body.password,
       },
       select: {
         id:true,
         name: true,
+        password:true
       },
     });
 
     console.log("Found user:", user);
 
     if (!user) {
-      c.status(400);
+      c.status(401);
+      return c.json({ error: "User not found" });
+    }
+
+    //  password verification
+    const isPasswordValid = await verifyPassword(body.password, user.password);
+    if (!isPasswordValid) {
+      c.status(401);
       return c.json({ error: "Invalid credentials" });
     }
 

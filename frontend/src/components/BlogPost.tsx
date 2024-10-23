@@ -19,7 +19,7 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
             dangerouslySetInnerHTML={{
               __html: DOMPurify.sanitize(blog.content),
             }} // Sanitizing and rendering the HTML
-          ></div>{" "}
+          ></div>
         </div>
         <div className=" col-span-4 pl-4">
           <div className="font-medium">Author</div>
@@ -39,8 +39,10 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
           </div>
         </div>
       </div>
-     
-        <Comments postId={blog.id};
+      <hr className="my-8 xl:mx-40 lg:mx-20 mx-5 border-gray-200" />
+      <div className="xl:px-40 lg:px-20 px-5 pt-10 ">
+        <Comments postId={blog.id} />
+      </div>
       
     </div>
   );

@@ -16,22 +16,50 @@ export const useComments = (postId: string) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const token = localStorage.getItem('token');
 
-  useEffect(() => {
-    axios
-      .get(`${BACKEND_URL}/api/v1/comments/posts/${postId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        setComments(response.data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Error fetching comments:', error);
-        setLoading(false);
-      });
-  }, [postId, token]);
+  const fetchComments = async ()=>{
+   await axios.get(`${BACKEND_URL}/api/v1/comments/post/${postId}`,{
+      headers:{
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then((response)=>{
+      setComments(response.data.comments);
+      setLoading(false)
+    })
+    .catch((error)=>{
+      console.error("Error fetching comments ", error);
+      setLoading(false)
+    })
+  }
 
-  return { loading, comments };
+
+  const addComment = async(content:string)=>{
+    try {
+      const response = await axios.post(
+        `${BACKEND_URL}/api/v1/comments`,
+        { content, postId },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if(response.data.id){
+
+        await fetchComments(); 
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Error posting comment:', error);
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    fetchComments();
+  }, [postId]);
+
+  return { loading, comments, addComment };
 };

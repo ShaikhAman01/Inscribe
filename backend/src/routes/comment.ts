@@ -3,6 +3,7 @@ import { withAccelerate } from "@prisma/extension-accelerate";
 import { createCommentInput } from "@shaikhaman/medium-common";
 import { Hono } from "hono";
 import { verify } from "hono/jwt";
+import { authMiddleware } from "../middlewares/auth";
 
 export const commentRouter = new Hono<{
   Bindings: {
@@ -14,25 +15,28 @@ export const commentRouter = new Hono<{
   };
 }>();
 
-commentRouter.use("/*", async (c, next) => {
-  const jwt = c.req.header("Authorization");
-  if (!jwt) {
-    c.status(401);
-    return c.json({ error: "Unauthorized" });
-  }
+// commentRouter.use("/*", async (c, next) => {
+//   const jwt = c.req.header("Authorization");
+//   if (!jwt) {
+//     c.status(401);
+//     return c.json({ error: "Unauthorized" });
+//   }
 
-  const token = jwt.split(" ")[1];
+//   const token = jwt.split(" ")[1];
 
-  const payload = await verify(token, c.env.JWT_SECRET);
-  if (!payload || typeof payload.id !== "string") {
-    c.status(401);
-    return c.json({ error: "Unauthorized" });
-  }
-  c.set("userId", payload.id);
-  await next();
-});
+//   const payload = await verify(token, c.env.JWT_SECRET);
+//   if (!payload || typeof payload.id !== "string") {
+//     c.status(401);
+//     return c.json({ error: "Unauthorized" });
+//   }
+//   c.set("userId", payload.id);
+//   await next();
+// });
+
+commentRouter.use("/*", authMiddleware);
 
 commentRouter.post("/", async (c) => {
+  const userId = c.get("userId");
   const body = await c.req.json();
   const { success } = createCommentInput.safeParse(body);
   if (!success) {
@@ -42,7 +46,6 @@ commentRouter.post("/", async (c) => {
     });
   }
 
-  const userId = c.get("userId");
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate());
@@ -52,11 +55,23 @@ commentRouter.post("/", async (c) => {
       data: {
         content: body.content,
         postId: body.postId,
-        authorId: body.userId,
+        authorId: userId,
+      },
+      include: {
+        author: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
-    comment.status(201);
-    return comment.json({ id: comment.id });
+    c.status(201);
+    return c.json({
+      id: comment.id,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      author: comment.author,
+    });
   } catch (e) {
     console.error("Error creating commet", e);
     c.status(500);
