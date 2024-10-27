@@ -17,7 +17,7 @@ export const useComments = (postId: string) => {
   const token = localStorage.getItem('token');
 
   const fetchComments = async ()=>{
-   await axios.get(`${BACKEND_URL}/api/v1/comments/post/${postId}`,{
+   await axios.get(`${BACKEND_URL}/api/v1/comments/posts/${postId}`,{
       headers:{
         Authorization: `Bearer ${token}`
       }

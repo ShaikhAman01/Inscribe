@@ -4,8 +4,8 @@ compatibility_date = "2024-10-02"
 compatibility_flags = [ "nodejs_compat" ]
 
 [vars]
-DATABASE_URL="your-database-url-here"
-JWT_SECRET="your_jWT_secret"
+DATABASE_URL="YOUR_DATABASE_URL"
+JWT_SECRET="YOUR_jWT_SECRET"
 
 [observability]
 enabled = true

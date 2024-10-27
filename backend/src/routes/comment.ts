@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client/extension";
+import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { createCommentInput } from "@shaikhaman/medium-common";
 import { Hono } from "hono";
@@ -14,24 +14,6 @@ export const commentRouter = new Hono<{
     userId: string;
   };
 }>();
-
-// commentRouter.use("/*", async (c, next) => {
-//   const jwt = c.req.header("Authorization");
-//   if (!jwt) {
-//     c.status(401);
-//     return c.json({ error: "Unauthorized" });
-//   }
-
-//   const token = jwt.split(" ")[1];
-
-//   const payload = await verify(token, c.env.JWT_SECRET);
-//   if (!payload || typeof payload.id !== "string") {
-//     c.status(401);
-//     return c.json({ error: "Unauthorized" });
-//   }
-//   c.set("userId", payload.id);
-//   await next();
-// });
 
 commentRouter.use("/*", authMiddleware);
 

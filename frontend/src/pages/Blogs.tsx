@@ -40,8 +40,7 @@ const Blogs = () => {
   return (
     <div>
       <Appbar onSearch={handleSearch} />
-      ...
-      <div className="flex justify-center py-10">
+      <div className="flex justify-center py-3">
         <div>
           {loading ? (
             Array.from({ length: 5 }).map((_, index) => (

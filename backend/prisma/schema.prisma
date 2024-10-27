@@ -1,5 +1,5 @@
 generator client {
-  provider   = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -8,31 +8,31 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(uuid())
-  email    String  @unique
+  id       String    @id @default(uuid())
+  email    String    @unique
   name     String
   password String
-  posts    Post[]
   comments Comment[]
+  posts    Post[]
 }
 
 model Post {
-  id        String  @id @default(uuid())
+  id        String    @id @default(uuid())
   title     String
   content   String
-  published Boolean @default(false)
-  createdAt DateTime @default(now()) 
+  published Boolean   @default(false)
   authorId  String
-  author    User    @relation(fields: [authorId], references: [id])
-  comments Comment[]
+  createdAt DateTime  @default(now())
+  comments  Comment[]
+  author    User      @relation(fields: [authorId], references: [id])
 }
 
-model Comment{
-  id        String @id @default(uuid())
+model Comment {
+  id        String   @id @default(uuid())
   content   String
   createdAt DateTime @default(now())
   postId    String
-  post      Post @relation(fields: [postId], references: [id])
   authorId  String
-  author    User @relation(fields: [authorId], references: [id])
+  author    User     @relation(fields: [authorId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
 }
