@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { lazy, Suspense } from "react";
+import Landing from "./pages/Landing";
 
 const Signup = lazy(() => import("./pages/Signup"));
 const Signin = lazy(() => import("./pages/Signin"));
@@ -13,6 +14,7 @@ function App() {
       <BrowserRouter>
         <Suspense>
           <Routes>
+            <Route path="/" element={<Landing/>} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/signin" element={<Signin />} />
             <Route path="/blog/:id" element={<Blog />} />
