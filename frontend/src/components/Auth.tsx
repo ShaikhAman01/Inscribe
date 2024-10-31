@@ -53,16 +53,18 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
       }
     );
   }
-
+  // Create An Account
   return (
-    <div className="h-screen flex justify-center flex-col">
+    <div className="h-screen flex justify-center flex-col bg-stone-50">
       <div className="flex justify-center">
         <div>
           <div className="px-10">
-            <div className="text-3xl font-extrabold text-center">
-              Create An Account
+            <div className="text-3xl font-extrabold text-center text-stone-900">
+            {type === "signup"
+                ? "Create an Account"
+                : "Login to your account"}
             </div>
-            <div className="text-slate-400 text-center">
+            <div className="text-stone-600 text-center">
               {type === "signup"
                 ? "Already Have an Account?"
                 : "Don't Have an account?"}
@@ -100,7 +102,7 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
               }}
             />
             <LabelledInput
-              label="password"
+              label="Password"
               type={"password"}
               placeholder=""
               onChange={(e) => {

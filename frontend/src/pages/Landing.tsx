@@ -48,9 +48,10 @@ export default function Landing () {
             </main>
 
 
-            <footer className="mt-64 border-t border-stone-200 bg-white py-6 text-center text-stone-600">
+            <footer className="mt-24   border-t border-stone-200 bg-white py-6 text-center text-stone-600">
                 <p>&copy; {new Date().getFullYear()} Inscribe. All rights reserved.</p>
-
+                <p>Made with ♡ by   
+                    <a href="https://github.com/shaikhaman01"> Aman </a></p>
             </footer>
 
         </div>

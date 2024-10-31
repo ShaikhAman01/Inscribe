@@ -30,7 +30,7 @@ const SearchBar = ({ onSearch }) => {
       </div>
       <input
         type="search"
-        className="block w-full py-2 pl-10 pr-4 text-sm text-gray-900 rounded-full border border-gray-300 focus:outline-none"
+        className="block w-full py-2 pl-10 pr-4 text-sm text-gray-900 rounded-lg border border-gray-300 focus:outline-none"
         placeholder="Search"
         value={searchTerm}
         onChange={handleSearch}

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useComments } from "../hooks/useComments";
 import { Avatar } from "./BlogCard";
+import { ToastContainer } from "./Toast";
+import { toast } from "sonner";
 
 const Comments = ({ postId }: { postId: string }) => {
   const { loading, comments, addComment } = useComments(postId);
@@ -9,7 +11,9 @@ const Comments = ({ postId }: { postId: string }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    if (!newComment.trim()) {
+      toast.info("write something to post");
+      return;}
     setIsSubmitting(true);
 
     try {
@@ -27,7 +31,7 @@ const Comments = ({ postId }: { postId: string }) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 ">
       <h2 className="text-2xl font-bold mb-4">Comments</h2>
 
       {/* Comment Form */}
@@ -37,14 +41,14 @@ const Comments = ({ postId }: { postId: string }) => {
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Write a comment..."
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent  resize-none"
-            rows={4}
+            className="w-full p-3 border-b border-gray-300  focus:border-slate-500 focus:outline-none transition-colors duration-150 ease-in-out resize-none"
+            rows={1}
           />
         </div>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-700  transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           {isSubmitting ? "Posting..." : "Post Comment"}
         </button>
@@ -52,7 +56,7 @@ const Comments = ({ postId }: { postId: string }) => {
 
       {/* Comments List */}
     {comments.map((comment)=>(
-    <div id={comment.id} className="border p-5 border-slate-200 rounded-lg ">
+    <div id={comment.id} className="">
 <div className="flex mb-2">
   <Avatar name={comment.author.name} />
   <div className="font-extralight pl-2 text-md flex justify-center flex-col">
@@ -62,6 +66,7 @@ const Comments = ({ postId }: { postId: string }) => {
 <div className="font-thin text-xl" >{comment.content}</div>
     </div>
     ))}
+        <ToastContainer />
 
     </div>
   );

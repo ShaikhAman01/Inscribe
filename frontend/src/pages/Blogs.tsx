@@ -4,6 +4,7 @@ import { useBlogs } from "../hooks";
 import BlogSkeleton from "../components/BlogSkeleton";
 import { useEffect, useState } from "react";
 import { formattedDate } from "../utils/FormattedDate";
+import { useNavigate } from "react-router-dom";
 // import { Divide } from "lucide-react";
 
 const Blogs = () => {
@@ -12,6 +13,15 @@ const Blogs = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const blogsPerPage = 5;
 
+  const navigate = useNavigate();
+
+  // Check for authentication
+  useEffect(() => {
+    const token = localStorage.getItem('token'); // Check for token
+    if (!token) {
+      navigate('/signup'); // Redirect to signup if not authenticated
+    }
+  }, [navigate]);
   useEffect(() => {
     setFilteredBlogs(blogs);
   }, [blogs]);
@@ -40,7 +50,7 @@ const Blogs = () => {
   return (
     <div>
       <Appbar onSearch={handleSearch} />
-      <div className="flex justify-center py-3">
+      <div className="flex justify-center py-3 bg-stone-50">
         <div>
           {loading ? (
             Array.from({ length: 5 }).map((_, index) => (

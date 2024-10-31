@@ -87,7 +87,7 @@ const Publish = () => {
   `;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-stone-50">
       <style>{containerStyle}</style>
       <Appbar />
       <main className="max-w-5xl mx-auto p-6 space-y-6">

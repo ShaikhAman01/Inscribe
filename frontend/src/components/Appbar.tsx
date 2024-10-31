@@ -4,6 +4,7 @@ import { ToastContainer, useToast } from "./Toast";
 import SearchBar from "./SearchBar";
 import Modal from "./Modal";
 import { useState } from "react";
+import { Feather } from "lucide-react";
 
 interface AppbarProps {
   onSearch: (query: string) => void;
@@ -41,13 +42,14 @@ const Appbar: React.FC<AppbarProps> = ({ onSearch }) => {
       <div className="flex items-center space-x-6">
         <Link
           to={"/blogs"}
-          className=" font-extrabold font-raleway text-blue-900 text-4xl "
+          className="flex items-center text-4xl font-bold text-stone-800"
         >
-          Inkscribe
+          <Feather className="h-6 w-6 mr-2" />
+          Inscribe
         </Link>
-        <div className="flex-grow max-w-md ">
-          <SearchBar onSearch={onSearch} />
-        </div>
+      </div>
+      <div className="flex-grow max-w-md ">
+        <SearchBar onSearch={onSearch} />
       </div>
 
       <div className="flex items-center  space-x-4">
