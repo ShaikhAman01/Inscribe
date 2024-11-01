@@ -1,7 +1,14 @@
 import { ArrowRight, Feather } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useBlogs } from "../hooks";
+import BlogSkeleton from "../components/BlogSkeleton";
 
 export default function Landing () {
+    const { loading, blogs } = useBlogs();
+    const stripHtml = (html) => {
+        return html.replace(/<[^>]*>/g, "");
+      };
+
     return(
         <div className="min-h-screen bg-stone-50 ">
             <header className="container mx-auto px-4 py-8">
@@ -29,22 +36,28 @@ export default function Landing () {
                 </section>
 
                 <section>
-                    <h2 className="font-serif font-bold text-stone-900 mb-8 text-3xl  ">Featured Posts</h2>
-                    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                    {[1, 2, 3].map((post) => (
-              <article key={post} className="rounded-lg border border-stone-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                <h3 className="mb-2 font-serif text-xl font-semibold text-stone-800">The Art of Writing: Part {post}</h3>
-                <p className="mb-4 text-stone-600">
-                  Explore the nuances of crafting compelling narratives and the power of well-chosen words.
-                </p>
-                <Link to={`/blog/post-${post}`} className="text-stone-800 hover:underline flex items-center">
-                  Read more
-                  <ArrowRight className="ml-2 h-4 w-4"/>
-                </Link>
-              </article>
-            ))}
-                    </div>
-                </section>
+          <h2 className="font-serif font-bold text-stone-900 mb-8 text-3xl">Featured Posts</h2>
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {loading ? (
+              Array.from({ length: 3 }).map((_, index) => (
+                <BlogSkeleton key={index} />
+              ))
+            ) : (
+              blogs.slice(0, 3).map((blog) => (
+                <article key={blog.id} className="rounded-lg border border-stone-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                  <h3 className="mb-2 font-serif text-xl font-semibold text-stone-800">{blog.title}</h3>
+                  <p className="mb-4 text-stone-600 line-clamp-2">
+                  {stripHtml(blog.content)}
+                  </p>
+                  <Link to={`/post/${blog.id}`} className="text-stone-800 hover:underline flex items-center">
+                    Read more
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </article>
+              ))
+            )}
+          </div>
+        </section>
             </main>
 
 

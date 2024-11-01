@@ -137,6 +137,7 @@ const Blogs = () => {
           </nav>
         </div>
       </div>
+      
     </div>
   );
 };
