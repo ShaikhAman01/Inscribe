@@ -1,3 +1,4 @@
+import { Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface BlogCardProps {
@@ -14,22 +15,29 @@ const BlogCard = ({
   content,
   createdAt,
 }: BlogCardProps) => {
-
-
   return (
     <Link to={`/blog/${id}`}>
-      <div className="border-b border-slate-200 pb-4 p-4 w-screen max-w-screen-md cursor-pointer">
-        <div className="flex">
-          <Avatar name={authorName} />
-          <div className="font-extralight pl-2 text-sm flex justify-center flex-col">
-            {`${authorName} · ${createdAt}`}
+      <div className="border-b border-slate-200 pb-4 mb-4 p-4 w-screen max-w-screen-md cursor-pointer shadow-sm transition-shadow hover:shadow-md">
+        <div className="flex items-center gap-3">
+          <Avatar name={authorName} size="big" />
+          <div>
+            <div className="font-medium">{`${authorName}`}</div>
+            <div className="text-sm text-stone-600">{`${createdAt}`}</div>
           </div>
+          {/* <div className="font-normal pl-2 text-sm flex justify-center flex-col">
+            {`${authorName} · ${createdAt}`}
+          </div> */}
         </div>
-        <div className="font-semibold text-xl pt-2">{title}</div>
-        <div className="font-thin text-md" >{content.slice(0, 100) + "..."}</div>
-        <div className=" text-slate-400 text-sm font-thin pt-4">{`${Math.ceil(
+
+        <div className="font-bold text-xl pt-2 group-hover:text-stone-600 transition-colors">
+          {title}
+        </div>
+        <div className="font-thin text-md ">
+          {content.slice(0, 120) + " ..."}
+        </div>
+        <div className=" text-slate-400 text-sm font-thin pt-4 flex items-center"><Clock className="h-4 w-4 mr-2"/>{`${Math.ceil(
           content.length / 1000
-        )} min read`}</div>
+        )}  min read`}</div>
       </div>
     </Link>
   );
@@ -50,12 +58,10 @@ export function Avatar({
       }`}
     >
       <span
-        className={`${
-          size === "small" ? "text-xs" : "text-md"
-        } text-gray-600 dark:text-gray-300`}
+        className={`${size === "small" ? "text-xs" : "text-md"} text-gray-300`}
       >
         {initials}
-        </span>
+      </span>
     </div>
   );
 }

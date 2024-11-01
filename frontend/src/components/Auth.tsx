@@ -1,6 +1,6 @@
 import { SignupInput } from "@shaikhaman/medium-common";
 import axios from "axios";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../config";
 import { ToastContainer, useToast } from "./Toast";
@@ -13,6 +13,13 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
     username: "",
     password: "",
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem('token'); // Check for token
+    if (token) {
+      navigate('/blogs'); // Redirect to blogs if authenticated
+    }
+  }, [navigate]);
 
   async function sendRequest() {
     console.log("Sending request with inputs:", postInputs); // Log inputs before sending

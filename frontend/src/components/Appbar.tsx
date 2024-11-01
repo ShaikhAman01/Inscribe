@@ -3,39 +3,14 @@ import { Avatar } from "./BlogCard";
 import { ToastContainer, useToast } from "./Toast";
 import SearchBar from "./SearchBar";
 import Modal from "./Modal";
-import { useState } from "react";
-import { Feather } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, Feather, LogOut } from "lucide-react";
 
 interface AppbarProps {
   onSearch: (query: string) => void;
 }
 
 const Appbar: React.FC<AppbarProps> = ({ onSearch }) => {
-  const { showToast } = useToast();
-  const name = localStorage.getItem("name") as string;
-  const navigate = useNavigate();
-
-  const [isModalVisible, setIsModalVisible] = useState(false);
-
-  const handleLogout = () => {
-    setIsModalVisible(true);
-  };
-
-  const confirmLogout = () => {
-    localStorage.removeItem("name");
-    localStorage.removeItem("token");
-    showToast("Signed out successfully", "success");
-
-    setIsModalVisible(false);
-
-    setTimeout(() => {
-      navigate("/signin");
-    }, 1000);
-  };
-
-  const cancalLogout = () => {
-    setIsModalVisible(false);
-  };
 
   return (
     <div className="border-b flex justify-between items-center px-10 py-3 h-16">
@@ -48,11 +23,11 @@ const Appbar: React.FC<AppbarProps> = ({ onSearch }) => {
           Inscribe
         </Link>
       </div>
-      <div className="flex-grow max-w-md ">
+      <div className="flex-grow max-w-md">
         <SearchBar onSearch={onSearch} />
       </div>
 
-      <div className="flex items-center  space-x-4">
+      <div className="flex items-center space-x-4">
         <Link
           to={"/publish"}
           className="mr-5 flex items-center hover:text-blue-700 transition-colors duration-200"
@@ -73,28 +48,95 @@ const Appbar: React.FC<AppbarProps> = ({ onSearch }) => {
           </svg>
           <span className="ml-1">Write</span>
         </Link>
-        <div className="pr-2 flex items-center">
-          <Avatar name={name} size={"big"} />
-        </div>
-        <div>
-          <button
-            onClick={handleLogout}
-            type="button"
-            className="text-gray-700 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-400 font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 shadow hover:shadow-md"
-          >
-            Logout
-          </button>
-        </div>
+        <ProfileDropdown />
       </div>
+    </div>
+  );
+};
 
-      <ToastContainer />
+const ProfileDropdown: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const navigate = useNavigate();
+  const { showToast } = useToast();
+  const name = localStorage.getItem("name")?.toUpperCase();
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogoutClick = () => {
+    setIsModalVisible(true);
+    setIsOpen(false);
+  };
+
+  const confirmLogout = () => {
+    localStorage.removeItem("name");
+    localStorage.removeItem("token");
+    showToast("Signed out successfully", "success");
+    setIsModalVisible(false);
+    
+    setTimeout(() => {
+      navigate("/signin");
+    }, 1000);
+  };
+
+  const cancelLogout = () => {
+    setIsModalVisible(false);
+  };
+
+  return (
+    <>
+      <div className="relative" ref={dropdownRef}>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center space-x-2 rounded-full bg-gray-100 p-2 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <Avatar name={name || "Unknown"} />
+          <ChevronDown
+            className={`h-4 w-4 transition-transform duration-200 ${
+              isOpen ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+
+        {isOpen && (
+          <div
+            className="absolute right-0 mt-2 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5"
+          >
+            <div className="px-4 py-2 border-b border-gray-100">
+              <p className="text-sm font-medium text-gray-900">{name}</p>
+            </div>
+
+            <button
+              className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+              onClick={handleLogoutClick}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </button>
+          </div>
+        )}
+      </div>
+        <ToastContainer />
 
       <Modal
         isVisible={isModalVisible}
-        onClose={cancalLogout}
+        onClose={cancelLogout}
         onConfirm={confirmLogout}
       />
-    </div>
+    </>
   );
 };
 

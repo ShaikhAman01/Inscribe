@@ -72,17 +72,17 @@ const Modal: React.FC<ModalProps> = ({ isVisible, onClose, onConfirm }) => {
           <button
             onClick={onConfirm}
             type="button"
-            className="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 
-             font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center"
+            className="py-2.5 px-5 me-6 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-4 focus:ring-gray-100"
           >
-            Yes, I'm sure
+            Logout
           </button>
           <button
             onClick={onClose}
             type="button"
-            className="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100"
+            className="text-white bg-slate-800 hover:bg-slate-600 focus:ring-4 focus:outline-none focus:ring-red-300 
+             font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center"
           >
-            No, cancel
+            cancel
           </button>
         </div>
       </div>

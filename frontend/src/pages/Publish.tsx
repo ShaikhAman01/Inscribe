@@ -1,5 +1,5 @@
 // Publish.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../config";
@@ -17,6 +17,8 @@ import {
 const MAX_TITLE_LENGTH = 100;
 const MAX_CONTENT_LENGTH = 5000;
 
+
+
 const Publish = () => {
   const { showPromiseToast } = useToast();
   const [title, setTitle] = useState("");
@@ -25,6 +27,12 @@ const Publish = () => {
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!token) {
+      navigate('/signup'); // Redirect to signup if not authenticated
+    }
+  }, [navigate]);
 
   const handlePublish = async () => {
     if (!title.trim() || !content.trim()) {

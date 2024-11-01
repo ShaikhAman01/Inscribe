@@ -50,7 +50,7 @@ const Blogs = () => {
   return (
     <div>
       <Appbar onSearch={handleSearch} />
-      <div className="flex justify-center py-3 bg-stone-50">
+      <div className="flex justify-center py-3 bg-white">
         <div>
           {loading ? (
             Array.from({ length: 5 }).map((_, index) => (
@@ -137,7 +137,11 @@ const Blogs = () => {
           </nav>
         </div>
       </div>
-      
+      <footer className="border-t border-stone-200 bg-white py-6 text-center text-stone-600">
+                <p>&copy; {new Date().getFullYear()} Inscribe. All rights reserved.</p>
+                <p>Made with ♡ by   
+                    <a href="https://github.com/shaikhaman01"> Aman </a></p>
+            </footer>
     </div>
   );
 };
