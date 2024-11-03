@@ -16,29 +16,39 @@ import {
   EditorActions,
 } from "../components/EditorComponents";
 
-const MAX_TITLE_LENGTH = 100;
-const MAX_CONTENT_LENGTH = 5000;
-
-
 
 const Publish = () => {
   const { showPromiseToast } = useToast();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  
+  const MAX_TITLE_LENGTH = 100;
+  const MAX_CONTENT_LENGTH = 5000;
+  const MIN_TITLE_LENGTH = 3;
+  const MIN_CONTENT_LENGTH = 10;
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!token) {
-      navigate('/signup'); // Redirect to signup if not authenticated
+      navigate("/signup"); // Redirect to signup if not authenticated
     }
   }, [navigate]);
 
   const handlePublish = async () => {
     if (!title.trim() || !content.trim()) {
       toast.info("Please fill in both title and content");
+      return;
+    }
+
+    if (title.length < MIN_TITLE_LENGTH) {
+      toast.info("Title must be minimum 3 characters long");
+      return;
+    }
+    else if (content.length < MIN_CONTENT_LENGTH) {
+      toast.info("Minimum content length is 10");
       return;
     }
 
@@ -96,9 +106,9 @@ const Publish = () => {
     }
   `;
 
-  const handleSearch = () =>{
-    console.log("to avoid errors")
-  }
+  const handleSearch = () => {
+    console.log("to avoid errors");
+  };
   return (
     <div className="min-h-screen bg-stone-50">
       <style>{containerStyle}</style>
