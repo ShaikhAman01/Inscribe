@@ -22,7 +22,7 @@ export default function Landing() {
         <Feather className="h-6 w-6 mr-2" />
         Inscribe
         </Link>
-        <ul className="flex justify-center items-center space-x-6">
+        <ul className="hidden md:flex justify-center items-center space-x-6">
             <li><Link to={"/blogs"} className="text-stone-600 hover:text-stone-900">Blogs</Link></li>
             <li><Link to={"/publish"} className="text-stone-600 hover:text-stone-900">Write</Link></li>
             <li> <Link to={"/signup"} className="inline-flex items-center bg-stone-800 text-stone-100 rounded-md px-4 py-2 transition-colors hover:bg-stone-700">

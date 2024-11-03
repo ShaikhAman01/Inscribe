@@ -70,7 +70,7 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
             <div className="text-3xl font-extrabold text-center text-stone-900">
             {type === "signup"
                 ? "Create an Account"
-                : "Login to your account"}
+                : "Sign In to Account"}
             </div>
             <div className="text-stone-600 text-center">
               {type === "signup"

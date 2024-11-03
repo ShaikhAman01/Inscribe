@@ -54,9 +54,9 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
 
 <div className="font-medium">Author</div>
 
-<div className="pt-3 flex justify-center items-center">
+<div className="pt-3 flex justify-center items-center pl-5 md:pl-0">
 
-  <div>
+  <div className="pl-16 md:pl-0">
 
     <Avatar name={blog.author.name || "Anonymous"} size="big" />
 
@@ -70,7 +70,7 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
 
     </div>
 
-    <div className="font-medium text-md text-slate-500 pt-3">
+    <div className="font-medium text-md text-slate-500 pt-3 min-w-44 md:min-w-0 ">
 
       Empowering others to realize life comes from within, inspiring
 

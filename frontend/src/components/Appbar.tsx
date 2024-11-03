@@ -4,7 +4,7 @@ import { ToastContainer, useToast } from "./Toast";
 import SearchBar from "./SearchBar";
 import Modal from "./Modal";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Feather, LogOut } from "lucide-react";
+import { ChevronDown, Feather, LogOut, SquarePen } from "lucide-react";
 
 interface AppbarProps {
   onSearch: (query: string) => void;
@@ -23,14 +23,14 @@ const Appbar: React.FC<AppbarProps> = ({ onSearch }) => {
           Inscribe
         </Link>
       </div>
-      <div className="flex-grow max-w-md">
+      <div className="flex-grow max-w-md mx-2 px-2">
         <SearchBar onSearch={onSearch} />
       </div>
 
       <div className="flex items-center space-x-4">
         <Link
           to={"/publish"}
-          className="mr-5 flex items-center hover:text-blue-700 transition-colors duration-200"
+          className="mr-5 hidden  md:flex items-center hover:text-blue-700 transition-colors duration-200"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -111,6 +111,8 @@ const ProfileDropdown: React.FC = () => {
           />
         </button>
 
+
+
         {isOpen && (
           <div
             className="absolute right-0 mt-2 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5"
@@ -118,6 +120,15 @@ const ProfileDropdown: React.FC = () => {
             <div className="px-4 py-2 border-b border-gray-100">
               <p className="text-sm font-medium text-gray-900">{name}</p>
             </div>
+ <p className="md:hidden w-full px-4 py-2 text-sm border-b border-gray-100 flex items-center  hover:bg-gray-100">
+            <Link
+          to={"/publish"}
+          className="flex"
+        >
+          <SquarePen className="mr-2 h-4 w-4"/>
+          Write
+        </Link>
+        </p>
 
             <button
               className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
@@ -128,6 +139,7 @@ const ProfileDropdown: React.FC = () => {
             </button>
           </div>
         )}
+
       </div>
         <ToastContainer />
 

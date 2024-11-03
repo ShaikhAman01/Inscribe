@@ -14,7 +14,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
   };
 
   return (
-    <div className="relative shadow-sm">
+    <div className="relative shadow-sm w-full max-w-md mx-auto">
       <div className="absolute inset-y-0 left-0 flex items-center pl-4">
         <svg
           className="w-4 h-4 text-gray-400"
