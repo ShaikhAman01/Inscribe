@@ -1,13 +1,12 @@
 import { ArrowRight, Feather } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useBlogs } from "../hooks";
-import BlogSkeleton from "../components/BlogSkeleton";
+import { usePublicBlogs } from "../hooks";
+import DOMPurify from "dompurify";
+import BlogLandingSkeleton from "../components/BlogLandingSkeleton";
 
 export default function Landing () {
-    const { loading, blogs } = useBlogs();
-    const stripHtml = (html) => {
-        return html.replace(/<[^>]*>/g, "");
-      };
+    const { loading, blogs } = usePublicBlogs();
+    const stripHtml = (html) => DOMPurify.sanitize(html, { ALLOWED_TAGS: [] });
 
     return(
         <div className="min-h-screen bg-stone-50 ">
@@ -42,7 +41,7 @@ export default function Landing () {
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {loading ? (
               Array.from({ length: 3 }).map((_, index) => (
-                <BlogSkeleton key={index} />
+                <BlogLandingSkeleton key={index} />
               ))
             ) : (
               blogs.slice(0, 3).map((blog) => (
@@ -51,7 +50,7 @@ export default function Landing () {
                   <p className="mb-4 text-stone-600 line-clamp-2">
                   {stripHtml(blog.content)}
                   </p>
-                  <Link to={`/blog/${blog.id}`} className="text-stone-800 hover:underline flex items-center">
+                  <Link to={`/blog/${blog.id}`} className="text-stone-800 hover:underline flex items-center ">
                     Read more
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>

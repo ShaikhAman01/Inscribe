@@ -39,7 +39,7 @@ blogRouter.post("/", async (c) => {
         authorId: authorId,
       },
     });
-    c.status(201);
+    c.status(200);
     return c.json({ id: post.id });
   } catch (e) {
     console.error("Error creating post", e);
@@ -152,7 +152,7 @@ blogRouter.get("/:id", async (c) => {
         },
       },
     });
-    c.status(201);
+    c.status(200);
     return c.json({ post });
   } catch (e) {
     console.error("Error fetching post", e);
