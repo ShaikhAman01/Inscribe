@@ -14,7 +14,6 @@ const QUILL_MODULES = {
 const QUILL_STYLES = `
   .ql-container.ql-snow, .ql-toolbar.ql-snow {
     border: none !important;
-    overflow-y: auto;
   }
   .ql-toolbar.ql-snow {
     border-bottom: 1px solid #e5e7eb !important;
@@ -24,11 +23,16 @@ const QUILL_STYLES = `
     top: 0;
     z-index: 10;
   }
+  .ql-container.ql-snow {
+    overflow-y: auto;
+    height: calc(100% - 42px); 
+  }
   .ql-editor {
     font-size: 16px;
     line-height: 1.75;
     padding: 1.5rem;
     min-height: calc(100vh - 400px);
+    overflow-y: auto;
   }
   .ql-editor p {
     margin-bottom: 1rem;
@@ -36,6 +40,23 @@ const QUILL_STYLES = `
   .ql-editor h1, .ql-editor h2, .ql-editor h3 {
     margin: 1.5rem 0 1rem;
     font-weight: 600;
+  }
+    .ql-formats {
+    display: inline-flex !important;
+    align-items: center;
+  }
+ .ql-tooltip {
+    position: absolute !important;
+    left: 1.5rem !important; /* Match editor padding */
+    transform: translateY(10px);
+    background-color: white !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 6px;
+    padding: 8px 12px !important;
+    z-index: 1000;
+    max-width: calc(100% - 3rem); /* Account for padding on both sides */
+    width: auto;
+    min-width: max-content;
   }
 `;
 
@@ -63,7 +84,7 @@ export const TitleInput = ({ title, setTitle, maxLength }:TitleInput) => (
 );
 
 export const ContentEditor = ({ content, setContent }:ContentEditor) => (
-  <div className="relative flex-grow bg-white rounded-lg">
+  <div className="relative flex-grow bg-white rounded-lg"  style={{ height: 'calc(100vh - 300px)' }}>
     <style>{QUILL_STYLES}</style>
     <ReactQuill
       theme="snow"

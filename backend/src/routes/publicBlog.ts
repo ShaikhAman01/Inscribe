@@ -20,6 +20,12 @@ publicBlogRouter.get("/", async (c) => {
     
     try {
       const post = await prisma.post.findMany({
+        where: {
+            author: {
+              name: {
+                not: "johndoe",
+              },
+            },},
         select: {
           content: true,
           title: true,
