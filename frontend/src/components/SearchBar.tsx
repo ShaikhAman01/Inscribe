@@ -1,9 +1,13 @@
 import { useState } from "react";
 
-const SearchBar = ({ onSearch }) => {
-  const [searchTerm, setSearchTerm] = useState("");
+interface SearchBarProps {
+  onSearch: (value: string) => void; // Function type for onSearch
+}
 
-  const handleSearch = (event) => {
+const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
     setSearchTerm(value);
     onSearch(value); // Call the parent-provided function

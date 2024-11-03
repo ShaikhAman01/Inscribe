@@ -1,10 +1,10 @@
 import React from 'react';
-import { Toaster, toast, ToastOptions } from "sonner";
+import { Toaster, toast } from "sonner";
 
 // Custom hook for using toast
 export const useToast = () => {
   const showToast = (message: string, type?: 'success' | 'error' | 'warning' | 'info') => {
-    const options: ToastOptions = { 
+    const options = { 
       style: { background: 'white', color: 'black' },
     };
 

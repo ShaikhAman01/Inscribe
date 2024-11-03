@@ -76,7 +76,11 @@ export const ContentEditor = ({ content, setContent }:ContentEditor) => (
   </div>
 );
 
-export const ContentPreview = ({ content}) => (
+interface ContentPreviewProps {
+  content: string;
+}
+
+export const ContentPreview =  ({ content }: ContentPreviewProps) => (
   <div className="mt-4 rounded-lg shadow-sm">
     <div className="p-6 prose max-w-none">
       <div

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { BACKEND_URL } from "../config";
 import { useNavigate } from "react-router-dom";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export interface Blog {
   content: string;

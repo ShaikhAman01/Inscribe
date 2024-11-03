@@ -2,8 +2,9 @@ import { SignupInput } from "@shaikhaman/medium-common";
 import axios from "axios";
 import { ChangeEvent, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BACKEND_URL } from "../config";
 import { ToastContainer, useToast } from "./Toast";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Auth = ({ type }: { type: "signup" | "signin" }) => {
   const { showPromiseToast } = useToast();

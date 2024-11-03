@@ -4,10 +4,12 @@ import { usePublicBlogs } from "../hooks";
 import DOMPurify from "dompurify";
 import BlogLandingSkeleton from "../components/BlogLandingSkeleton";
 
-export default function Landing () {
+interface LandingProps {
+  html : string;
+}
+export default function Landing ({ html }: LandingProps) {
     const { loading, blogs } = usePublicBlogs();
-    const stripHtml = (html) => DOMPurify.sanitize(html, { ALLOWED_TAGS: [] });
-
+    const stripHtml = (html: string) => DOMPurify.sanitize(html, { ALLOWED_TAGS: [] });
     return(
         <div className="min-h-screen bg-stone-50 ">
             <header className="container mx-auto px-4 py-8">

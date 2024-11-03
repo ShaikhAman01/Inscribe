@@ -2,10 +2,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { BACKEND_URL } from "../config";
 import Appbar from "../components/Appbar";
 import { ToastContainer, useToast } from "../components/Toast";
 import { toast } from "sonner";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 import {
   TitleInput,
   ContentEditor,
@@ -94,10 +96,13 @@ const Publish = () => {
     }
   `;
 
+  const handleSearch = () =>{
+    console.log("to avoid errors")
+  }
   return (
     <div className="min-h-screen bg-stone-50">
       <style>{containerStyle}</style>
-      <Appbar />
+      <Appbar onSearch={handleSearch} />
       <main className="max-w-5xl mx-auto p-6 space-y-6">
         <div className="bg-white rounded-lg shadow-sm p-6 max-w-5xl">
           <TitleInput
