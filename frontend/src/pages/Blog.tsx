@@ -11,7 +11,7 @@ const Blog = () => {
     id: id || "",
   });
 
-  const handleSearch = (searchTerm: string) =>{
+  const handleSearch = () =>{
     console.log("this is done to avoid errors")
   }
 

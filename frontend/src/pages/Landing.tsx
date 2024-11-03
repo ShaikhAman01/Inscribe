@@ -50,7 +50,7 @@ export default function Landing() {
                 <BlogLandingSkeleton key={index} />
               ))
             ) : (
-              blogs.slice(0, 3).map((blog) => (
+              blogs.slice(0, 3).map((blog:Blog) => (
                 <article key={blog.id} className="rounded-lg border border-stone-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                   <h3 className="mb-2 font-serif text-xl font-semibold text-stone-800">{blog.title}</h3>
                   <p className="mb-4 text-stone-600 line-clamp-2">
