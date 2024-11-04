@@ -47,7 +47,7 @@ const Publish = () => {
       toast.info("Title must be minimum 3 characters long");
       return;
     }
-    else if (content.length < MIN_CONTENT_LENGTH) {
+    if (content.length < MIN_CONTENT_LENGTH) {
       toast.info("Minimum content length is 10");
       return;
     }
