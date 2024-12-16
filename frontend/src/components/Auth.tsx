@@ -10,6 +10,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const Auth = ({ type }: { type: "signup" | "signin" }) => {
   const { showPromiseToast } = useToast();
   const navigate = useNavigate();
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [postInputs, setPostInputs] = useState<SignupInput>({
     name: "",
     username: "",
@@ -24,8 +25,11 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
   }, [navigate]);
 
   async function sendRequest() {
-    console.log("Sending request with inputs:", postInputs); // Log inputs before sending
-
+    if (postInputs.password.length < 6) {
+      console.log("Sending request with inputs:", postInputs); // Log inputs before sending
+      setPasswordError("Password must be at least 6 characters long");
+      return; // 
+    }
     showPromiseToast(
       async () => {
         const response = await axios.post(
@@ -115,12 +119,21 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
               type={"password"}
               placeholder=""
               onChange={(e) => {
+                const password = e.target.value;
+                if (password.length < 6) {
+                  setPasswordError("Password must be at least 6 characters long");
+                } else {
+                  setPasswordError(null);
+                }
                 setPostInputs({
                   ...postInputs,
-                  password: e.target.value,
+                  password: password,
                 });
               }}
             />
+            {passwordError && (
+              <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+            )}
             <button
               onClick={sendRequest}
               type="button"
