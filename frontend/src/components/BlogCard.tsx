@@ -17,7 +17,7 @@ const BlogCard = ({
 }: BlogCardProps) => {
   return (
     <Link to={`/blog/${id}`}>
-      <div className="border-b border-slate-200 pb-4 mb-4 p-4 w-screen max-w-screen-md cursor-pointer shadow-sm transition-shadow hover:shadow-md">
+      <div className="border-b border-slate-200 pb-4 mb-4 p-4 w-screen max-w-screen-lg cursor-pointer shadow-sm transition-shadow hover:shadow-md">
         <div className="flex items-center gap-3">
           <Avatar name={authorName} size="big" />
           <div>
