@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import Landing from "./pages/Landing";
+import EditBlog from "./pages/EditBlog";
 
 const Signup = lazy(() => import("./pages/Signup"));
 const Signin = lazy(() => import("./pages/Signin"));
@@ -18,6 +19,7 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/signin" element={<Signin />} />
             <Route path="/blog/:id" element={<Blog />} />
+            <Route path="/blog/:blogId/edit" element={<EditBlog />} />
             <Route path="/blogs" element={<Blogs />} />
             <Route path="/publish" element={<Publish />} />
           </Routes>

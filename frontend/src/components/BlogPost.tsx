@@ -1,10 +1,18 @@
-import { Blog } from "../hooks";
+// import { Blog } from "../hooks";
 import { formattedDate } from "../utils/FormattedDate";
 import { Avatar } from "./BlogCard";
 import DOMPurify from "dompurify";
 import Comments from "./Comments";
+import { useNavigate } from "react-router-dom";
 
-const BlogPost = ({ blog }: { blog: Blog }) => {
+const BlogPost = ({ blog }: { blog: { id: string, title: string, createdAt: string, content: string, author: { id: string, name: string } } }) => {
+  const userId = localStorage.getItem("userId");
+  const navigate = useNavigate();
+
+  const handleEdit = () => {
+    navigate(`/blog/${blog.id}/edit`);
+  }
+
   const containerStyle = `
     .blog-content h1 {
       font-size: 2em;
@@ -49,6 +57,13 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
               __html: DOMPurify.sanitize(blog.content),
             }}
           />
+          <div>
+            {blog.author.id == userId && (
+              <button onClick={handleEdit} className="bg-slate-950 text-white px-4 py-2 rounded-lg mt-5">
+                Edit
+              </button>
+            )}
+          </div>
         </div>
         <div className=" col-span-4 pl-4 sm:pt-10">
 

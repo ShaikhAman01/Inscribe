@@ -48,7 +48,7 @@ blogRouter.post("/", async (c) => {
   }
 });
 
-blogRouter.put("/", async (c) => {
+blogRouter.put("/:id", async (c) => {
   const body = await c.req.json();
   const { success } = updateBlogInput.safeParse(body);
   if (!success) {
@@ -61,7 +61,21 @@ blogRouter.put("/", async (c) => {
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate());
 
+  const userId = c.get("userId");
+
   try {
+    const existngPost = await prisma.post.findFirst({
+      where: {
+        id: body.id,
+        authorId: userId,
+      },
+    });
+
+    if (!existngPost) {
+      c.status(401);
+      return c.json({ error: "You are not authorized to update this post" });
+    }
+
     const post = await prisma.post.update({
       where: {
         id: body.id,
