@@ -1,104 +1,67 @@
-// import { ArrowRight, Feather } from "lucide-react";
-// import { Link } from "react-router-dom";
-// import { usePublicBlogs } from "../hooks";
-// import DOMPurify from "dompurify";
-// import BlogLandingSkeleton from "../components/BlogLandingSkeleton";
-
-import { useState, useEffect } from "react";
-// interface Blog {
-//   id: string;
-//   title: string;
-//   content: string;
-// }
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Feather } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export default function Landing() {
-    // const { loading, blogs } = usePublicBlogs();
-    // const stripHtml = (html: string): string => DOMPurify.sanitize(html, { ALLOWED_TAGS: [] });
-    
-    return(
-        // <div className="min-h-screen bg-stone-50 ">
-        //     <header className="container mx-auto px-4 py-8">
-        // <nav className="flex items-center justify-between">
-        // <Link to={"/"}  className="flex items-center text-4xl font-bold text-stone-800">
-        // <Feather className="h-6 w-6 mr-2" />
-        // Inscribe
-        // </Link>
-        // <ul className="hidden md:flex justify-center items-center space-x-6">
-        //     <li><Link to={"/blogs"} className="text-stone-600 hover:text-stone-900">Blogs</Link></li>
-        //     <li><Link to={"/publish"} className="text-stone-600 hover:text-stone-900">Write</Link></li>
-        //     <li> <Link to={"/signup"} className="inline-flex items-center bg-stone-800 text-stone-100 rounded-md px-4 py-2 transition-colors hover:bg-stone-700">
-        //             Get Started 
-        //             </Link></li>
-        // </ul>
-        // </nav>
-        //     </header>
+  const isUnderConstruction = true; // Toggle this flag
 
-        //     <main className="container mx-auto py-16 px-4">
-        //         <section className="mb-36 text-center">
-        //             <h1 className="mb-4 font-serif font-bold text-5xl text-stone-800">Welcome to Inscribe</h1>
-        //             <p className="mb-8 text-xl text-stone-600">Where words find their homes and ideas take flight.</p>
-        //             <Link to={"/signup"} className="inline-flex items-center bg-stone-800 text-stone-100 rounded-md px-6 py-3 transition-colors hover:bg-stone-700">
-        //             Start Reading 
-        //             <ArrowRight className="ml-2 h-4 w-4"/>
-        //             </Link>
-        //         </section>
+  return (
+    <div>
+      {isUnderConstruction ? (
+        <ComingSoon />
+      ) : (
+        <div>
+          {/* Landing Page Content */}
+          <header className="container mx-auto px-4 py-8">
+            <nav className="flex items-center justify-between">
+              <Link to={"/"} className="flex items-center text-4xl font-bold text-stone-800">
+                <Feather className="h-6 w-6 mr-2" />
+                Inscribe
+              </Link>
+              <ul className="hidden md:flex justify-center items-center space-x-6">
+                <li><Link to={"/blogs"} className="text-stone-600 hover:text-stone-900 hover:underline">Blogs</Link></li>
+                <li><Link to={"/publish"} className="text-stone-600 hover:text-stone-900 hover:underline">Write</Link></li>
+                <li>
+                  <Link to={"/signup"} className="inline-flex items-center bg-stone-800 text-stone-100 rounded-md px-4 py-2 transition-colors hover:bg-stone-700">
+                    Get Started
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+          </header>
 
-        //         <section>
-        //   <h2 className="font-serif font-bold text-stone-900 mb-8 text-3xl">Featured Posts</h2>
-        //   <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        //     {loading ? (
-        //       Array.from({ length: 3 }).map((_, index) => (
-        //         <BlogLandingSkeleton key={index} />
-        //       ))
-        //     ) : (
-        //       blogs.slice(0, 3).map((blog:Blog) => (
-        //         <article key={blog.id} className="rounded-lg border border-stone-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-        //           <h3 className="mb-2 font-serif text-xl font-semibold text-stone-800">{blog.title}</h3>
-        //           <p className="mb-4 text-stone-600 line-clamp-2">
-        //           {stripHtml(blog.content)}
-        //           </p>
-        //           <Link to={`/blog/${blog.id}`} className="text-stone-800 hover:underline flex items-center ">
-        //             Read more
-        //             <ArrowRight className="ml-2 h-4 w-4" />
-        //           </Link>
-        //         </article>
-        //       ))
-        //     )}
-        //   </div>
-        // </section>
-        //     </main>
+          {/* Landing Page Main Content */}
+          <main className="container mx-auto py-16 px-4">
+            <section className="mb-36 text-center">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mt-8 mb-4">
+                Transform Your Ideas Into Powerful Stories
+              </h1>
+              <p className="text-lg md:text-xl text-gray-600 text-center max-w-2xl mx-auto mb-4">
+                Your premier platform for crafting, sharing, and discovering exceptional writing. Join our community of passionate writers and readers today.
+              </p>
+              <Link to={"/signup"} className="inline-flex items-center bg-stone-800 text-stone-100 rounded-md px-6 py-3 transition-colors hover:bg-stone-700">
+                Start Reading
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </section>
 
+            <section>
+              <h2 className="font-serif font-bold text-stone-900 mb-8 text-3xl">Featured Posts</h2>
+              {/* Render Featured Posts */}
+            </section>
+          </main>
 
-        //     <footer className="mt-14 border-t border-stone-200 bg-white py-6 text-center text-stone-600">
-        //         <p>&copy; {new Date().getFullYear()} Inscribe. All rights reserved.</p>
-        //         <p>Made with ♡ by   
-        //             <a href="https://github.com/shaikhaman01"> Aman </a></p>
-        //     </footer>
-
-        // </div>
-        <ComingSoon/>
-    )
-} 
-
-// export function ComingSoon() {
-//   return (
-//     <div className="flex h-screen items-center justify-center bg-gray-900 text-white text-center px-6">
-//       <div>
-//         <h1 className="text-4xl font-bold mb-4">🚀 Big Changes Are Coming!</h1>
-//         <p className="text-lg text-gray-300 mb-6">
-//           We're working on something amazing. Stay tuned!
-//         </p>
-
-//         {/* Progress Animation */}
-//         <div className="w-48 h-1 bg-gray-700 rounded-full overflow-hidden mx-auto mb-6">
-//           <div className="h-full bg-blue-500 animate-pulse"></div>
-//         </div>
-
-//       </div>
-//     </div>
-//   );
-// }
-
+          {/* Footer */}
+          <footer className="mt-14 border-t border-stone-200 bg-white py-6 text-center text-stone-600">
+            <p>&copy; {new Date().getFullYear()} Inscribe. All rights reserved.</p>
+            <p>Made with ♡ by <a href="https://github.com/shaikhaman01">Aman</a></p>
+          </footer>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function ComingSoon() {
   const messages = [
@@ -134,6 +97,7 @@ export function ComingSoon() {
           <span className="w-3 h-3 bg-blue-500 rounded-full animate-bounce delay-150"></span>
           <span className="w-3 h-3 bg-blue-500 rounded-full animate-bounce delay-300"></span>
         </div>
+
 
       </div>
 
