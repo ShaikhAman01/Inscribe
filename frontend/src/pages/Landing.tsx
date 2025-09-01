@@ -4,7 +4,7 @@ import { Feather } from "lucide-react";
 import { ArrowRight } from "lucide-react";
 
 export default function Landing() {
-  const isUnderConstruction = true; // Toggle this flag
+  const isUnderConstruction = false;
 
   return (
     <div>
