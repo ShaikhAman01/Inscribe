@@ -1,115 +1,105 @@
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs"; // Optional, but better than raw SHA-256
+import { PrismaClient } from '@prisma/client';
+import { faker } from '@faker-js/faker';
+import * as dotenv from 'dotenv';
 
-const prisma = new PrismaClient();
+declare const process: { exit(code?: number): void };
+
+dotenv.config();
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL, 
+    },
+  },
+});
+
+const TECH_CONTENT = [
+  {
+    title: "Why Simplicity Wins in Modern Software Development",
+    content: "In today's fast-moving tech world, it's tempting to believe that more complexity means more power. New frameworks, advanced architectures, and endless tools promise to make development faster and smarter. But in reality, the most effective software often comes from one principle: simplicity. Simple code is easier to understand, teams benefit from clearer logic, and onboarding becomes faster. Over-engineered systems can become fragile and difficult to scale. What starts as a clever solution can quickly turn into technical debt."
+  },
+  {
+    title: "Building Scalable Systems with Cloudflare Workers",
+    content: "Serverless computing at the edge has changed the game. By moving logic closer to the user, we reduce latency and improve global performance. Using the Edge Runtime allows for instant cold starts and massive scalability without managing infrastructure. In this post, we explore how to leverage Hono and Prisma Accelerate to build a high-performance backend that runs globally in milliseconds."
+  },
+  {
+    title: "Mastering the Arch Linux Workflow",
+    content: "Arch Linux is more than just a rolling release distribution; it's a philosophy of simplicity and total control. From the installation process to managing the AUR, Arch forces you to understand how your system works. For developers, this environment provides a clean slate to build a customized development machine that isn't bogged down by bloatware. We dive into tiling window managers and package management best practices."
+  },
+  {
+    title: "The Rise of Agentic AI in 2026",
+    content: "We are moving beyond simple chatbots. Agentic AI refers to systems that can plan, reason, and execute tasks independently. These agents don't just answer questions; they interact with APIs, manage schedules, and debug code. Understanding how to integrate LLMs into autonomous workflows is becoming a critical skill for full-stack engineers."
+  },
+  {
+    title: "PostgreSQL vs NoSQL: Making the Right Choice",
+    content: "The debate between relational and non-relational databases is often misunderstood. PostgreSQL has evolved to handle JSONB and massive scale, making it a viable choice even for data types traditionally reserved for NoSQL. When building platforms like Inscribe, the relational integrity of Postgres ensures that users, posts, and likes stay consistent without complex application-level logic."
+  }
+];
 
 async function main() {
-  console.log("🌱 Seeding database...");
+  console.log("Cleaning Database...");
+  // Ordered delete to avoid foreign key errors
+  await prisma.like.deleteMany();
+  await prisma.comment.deleteMany();
+  await prisma.post.deleteMany();
+  await prisma.tag.deleteMany();
+  await prisma.user.deleteMany();
 
-  // Create users
-  const users = await prisma.user.createMany({
-    data: [
-      {
-        email: "alice@example.com",
-        name: "Alice Johnson",
-        password: await hash("password123"),
-      },
-      {
-        email: "bob@example.com",
-        name: "Bob Smith",
-        password: await hash("securepass"),
-      },
-      {
-        email: "charlie@example.com",
-        name: "Charlie Adams",
-        password: await hash("mypassword"),
-      },
-      {
-        email: "johndoe@example.com",
-        name: "johndoe",
-        password: await hash("hiddenuser"),
-      },
-    ],
-  });
+  console.log("Generating 12 Realistic Users...");
+  const users = await Promise.all(
+    Array.from({ length: 12 }).map(() => 
+      prisma.user.create({
+        data: {
+          email: faker.internet.email().toLowerCase(),
+          name: faker.person.fullName(),
+          password: "hashed_password_placeholder", 
+        }
+      })
+    )
+  );
 
-  console.log("✅ Users created");
+  console.log("Creating Professional Tags...");
+  const tagNames = ['Engineering', 'Architecture', 'AI', 'OpenSource', 'Database', 'Career', 'Productivity'];
+  const tags = await Promise.all(
+    tagNames.map(name => prisma.tag.create({ data: { name } }))
+  );
 
-  // Fetch users for relationships
-  const alice = await prisma.user.findUnique({ where: { email: "alice@example.com" } });
-  const bob = await prisma.user.findUnique({ where: { email: "bob@example.com" } });
-  const charlie = await prisma.user.findUnique({ where: { email: "charlie@example.com" } });
+  console.log("Generating 20 Curated Blogs...");
+  for (let i = 0; i < 20; i++) {
+    const author = users[Math.floor(Math.random() * users.length)];
+    const contentTemplate = TECH_CONTENT[i % TECH_CONTENT.length];
+    const postTags = faker.helpers.arrayElements(tags, { min: 1, max: 2 });
 
-  // Create posts
-  const posts = await prisma.post.createMany({
-    data: [
-      {
-        title: "The Future of AI in 2025",
-        content: "Artificial Intelligence continues to evolve at a rapid pace...",
+    const post = await prisma.post.create({
+      data: {
+        title: contentTemplate.title + (i > 5 ? `: Part ${Math.floor(i/5)}` : ""),
+        content: contentTemplate.content + "\n\n" + faker.lorem.paragraphs(2),
+        authorId: author.id,
         published: true,
-        authorId: alice!.id,
-      },
-      {
-        title: "How to Stay Productive Working From Home",
-        content: "Remote work is becoming the new normal, but it comes with challenges...",
-        published: true,
-        authorId: bob!.id,
-      },
-      {
-        title: "A Beginner's Guide to Web3",
-        content: "Web3 promises a decentralized internet, but what does that really mean?",
-        published: true,
-        authorId: charlie!.id,
-      },
-      {
-        title: "The Hidden User Post",
-        content: "This is from johndoe and should be excluded from featured blogs.",
-        published: true,
-        authorId: (await prisma.user.findUnique({ where: { email: "johndoe@example.com" } }))!.id,
-      },
-    ],
-  });
+        tags: {
+          connect: postTags.map(t => ({ id: t.id }))
+        }
+      }
+    });
 
-  console.log("✅ Posts created");
+    // Random Likes (5-15 per post)
+    const likers = faker.helpers.arrayElements(users, { min: 5, max: 12 });
+    await Promise.all(likers.map(liker => 
+      prisma.like.create({ data: { userId: liker.id, postId: post.id } })
+    ));
 
-  // Get posts for comments
-  const post1 = await prisma.post.findFirst({ where: { title: "The Future of AI in 2025" } });
-  const post2 = await prisma.post.findFirst({ where: { title: "How to Stay Productive Working From Home" } });
+    // Random Comments
+    await prisma.comment.create({
+      data: {
+        content: "Great insights! This really cleared up my doubts about the architecture.",
+        authorId: users[Math.floor(Math.random() * users.length)].id,
+        postId: post.id
+      }
+    });
+  }
 
-  // Create comments
-  await prisma.comment.createMany({
-    data: [
-      {
-        content: "Great insights! I think AI will change healthcare the most.",
-        postId: post1!.id,
-        authorId: bob!.id,
-      },
-      {
-        content: "I prefer working in the office, but hybrid is fine.",
-        postId: post2!.id,
-        authorId: alice!.id,
-      },
-      {
-        content: "Interesting take! I’d like to know your sources.",
-        postId: post1!.id,
-        authorId: charlie!.id,
-      },
-    ],
-  });
-
-  console.log("Comments created");
+  console.log("Database Seeded with Real Content! 🚀");
 }
 
-async function hash(password: string): Promise<string> {
-  return bcrypt.hash(password, 10);
-}
-
-main()
-  .then(async () => {
-    console.log("🌟 Seeding completed successfully!");
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
-    console.error("Seeding failed", e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+main().catch(e => { console.error(e); process.exit(1); }).finally(() => prisma.$disconnect());
