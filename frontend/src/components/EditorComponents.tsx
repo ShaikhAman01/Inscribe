@@ -1,7 +1,6 @@
-
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { Eye, Edit2, Send } from "lucide-react";
+import { Eye, Edit2, Send, Tag as TagIcon } from "lucide-react";
 
 const QUILL_MODULES = {
   toolbar: [
@@ -16,138 +15,121 @@ const QUILL_STYLES = `
     border: none !important;
   }
   .ql-toolbar.ql-snow {
-    border-bottom: 1px solid #e5e7eb !important;
-    padding-left: 0;
+    border-bottom: 1px solid #f3f4f6 !important;
+    padding: 0.5rem 1.5rem !important;
     background: white;
     position: sticky;
     top: 0;
     z-index: 10;
   }
-  .ql-container.ql-snow {
-    overflow-y: auto;
-    height: calc(100% - 42px); 
-  }
   .ql-editor {
-    font-size: 16px;
-    line-height: 1.75;
-    padding: 1.5rem;
-    min-height: calc(100vh - 400px);
-    overflow-y: auto;
+    font-size: 18px;
+    line-height: 1.8;
+    padding: 2rem 1.5rem;
+    min-height: 400px;
+    color: #1c1917;
   }
-  .ql-editor p {
-    margin-bottom: 1rem;
-  }
-  .ql-editor h1, .ql-editor h2, .ql-editor h3 {
-    margin: 1.5rem 0 1rem;
-    font-weight: 600;
-  }
-    .ql-formats {
-    display: inline-flex !important;
-    align-items: center;
-  }
- .ql-tooltip {
-    position: absolute !important;
-    left: 1.5rem !important; /* Match editor padding */
-    transform: translateY(10px);
-    background-color: white !important;
-    border: 1px solid #e5e7eb !important;
-    border-radius: 6px;
-    padding: 8px 12px !important;
-    z-index: 1000;
-    max-width: calc(100% - 3rem); /* Account for padding on both sides */
-    width: auto;
-    min-width: max-content;
+  .ql-editor.ql-blank::before {
+    color: #d6d3d1;
+    font-style: normal;
+    left: 1.5rem;
   }
 `;
 
-interface TitleInput{
-   title:string, 
-   setTitle:(newTitle: string) => void, 
-   maxLength:number, 
+interface TitleInputProps {
+  title: string;
+  setTitle: (newTitle: string) => void;
+  maxLength: number;
 }
 
-interface ContentEditor{
-    content:string,
-    setContent:(newContent: string) => void;
-}
-
-
-export const TitleInput = ({ title, setTitle, maxLength }:TitleInput) => (
+export const TitleInput = ({ title, setTitle, maxLength }: TitleInputProps) => (
   <input
     type="text"
-    placeholder="Enter your blog title..."
+    placeholder="Title"
     value={title}
     onChange={(e) => setTitle(e.target.value)}
     maxLength={maxLength}
-    className="w-full text-3xl p-6 font-bold border-none focus:outline-none rounded-lg placeholder-gray-400"
+    className="w-full text-5xl p-6 font-black border-none focus:outline-none placeholder-stone-200 text-stone-900 bg-transparent"
   />
 );
 
-export const ContentEditor = ({ content, setContent }:ContentEditor) => (
-  <div className="relative flex-grow bg-white rounded-lg"  style={{ height: 'calc(100vh - 300px)' }}>
+interface TagInputProps {
+  tags: string;
+  setTags: (val: string) => void;
+}
+
+export const TagInput = ({ tags, setTags }: TagInputProps) => (
+  <div className="px-6 pb-4">
+    <div className="flex items-center gap-2 text-stone-400 mb-2">
+      <TagIcon className="w-4 h-4" />
+      <span className="text-xs font-black uppercase tracking-widest">Tags (comma separated)</span>
+    </div>
+    <input
+      type="text"
+      placeholder="technology, philosophy, life..."
+      value={tags}
+      onChange={(e) => setTags(e.target.value)}
+      className="w-full bg-stone-50 border border-stone-100 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-stone-200 transition-all text-stone-700 placeholder-stone-300"
+    />
+  </div>
+);
+
+interface ContentEditorProps {
+  content: string;
+  setContent: (newContent: string) => void;
+}
+
+export const ContentEditor = ({ content, setContent }: ContentEditorProps) => (
+  <div className="relative flex-grow bg-white rounded-xl overflow-hidden border border-stone-100 shadow-sm">
     <style>{QUILL_STYLES}</style>
     <ReactQuill
       theme="snow"
       value={content}
       onChange={setContent}
       modules={QUILL_MODULES}
-      placeholder="Start writing your post..."
+      placeholder="Tell your story..."
       className="h-full"
     />
   </div>
 );
 
-interface ContentPreviewProps {
-  content: string;
-}
-
-export const ContentPreview =  ({ content }: ContentPreviewProps) => (
-  <div className="mt-4 rounded-lg shadow-sm">
-    <div className="p-6 prose max-w-none">
+export const ContentPreview = ({ content }: { content: string }) => (
+  <div className="mt-4 bg-white rounded-xl border border-stone-100 shadow-sm min-h-[400px]">
+    <div className="p-8 prose prose-stone max-w-none">
       <div
-        className="preview-content"
+        className="preview-content blog-content"
         dangerouslySetInnerHTML={{ __html: content }}
       />
     </div>
   </div>
 );
 
-interface WordCount{
-    content:string,
-    maxLength:number
-}
-
-export const WordCount = ({ content, maxLength }:WordCount) => {
-  const wordCount = content.replace(/<[^>]*>/g, "").length;
-  const getCountColor = () => {
-    if (wordCount > maxLength) return "text-red-500";
-    if (wordCount > maxLength * 0.7) return "text-yellow-500";
-    return "text-gray-500";
-  };
+export const WordCount = ({ content, maxLength }: { content: string; maxLength: number }) => {
+  const charCount = content.replace(/<[^>]*>/g, "").length;
+  const isOver = charCount > maxLength;
 
   return (
-    <div className={`text-sm mt-2 text-right ${getCountColor()}`}>
-      {wordCount.toLocaleString()} / {maxLength.toLocaleString()} characters
+    <div className={`text-xs mt-4 px-2 font-bold tracking-widest uppercase ${isOver ? "text-red-500" : "text-stone-400"}`}>
+      {charCount.toLocaleString()} / {maxLength.toLocaleString()} characters
     </div>
   );
 };
 
-
 interface EditorActionsProps {
-    onPreview: () => void; 
-    onPublish: () => void; 
-    isPreviewMode: boolean; 
-  }
+  onPreview: () => void;
+  onPublish: () => void;
+  isPreviewMode: boolean;
+}
 
-export const EditorActions = ({ onPreview, onPublish, isPreviewMode }:EditorActionsProps) => (
-  <div className="flex gap-4 mt-6">
+export const EditorActions = ({ onPreview, onPublish, isPreviewMode }: EditorActionsProps) => (
+  <div className="flex items-center justify-between mt-10 pt-6 border-t border-stone-100">
     <button
       onClick={onPreview}
-      className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+      className="flex items-center gap-2 px-6 py-3 font-bold text-stone-600 bg-stone-100 rounded-full hover:bg-stone-200 transition-all active:scale-95"
     >
       {isPreviewMode ? (
         <>
-          <Edit2 className="w-4 h-4" /> Edit
+          <Edit2 className="w-4 h-4" /> Edit Story
         </>
       ) : (
         <>
@@ -157,7 +139,7 @@ export const EditorActions = ({ onPreview, onPublish, isPreviewMode }:EditorActi
     </button>
     <button
       onClick={onPublish}
-      className="flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+      className="flex items-center gap-2 px-8 py-3 font-black text-white bg-stone-900 rounded-full hover:bg-stone-800 shadow-lg shadow-stone-200 transition-all active:scale-95"
     >
       <Send className="w-4 h-4" /> Publish
     </button>

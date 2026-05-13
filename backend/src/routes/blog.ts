@@ -9,6 +9,7 @@ export const blogRouter = new Hono<{
   Bindings: {
     DATABASE_URL: string;
     JWT_SECRET: string;
+    AI: any;
   };
   Variables: {
     userId: string;
@@ -37,6 +38,12 @@ blogRouter.post("/", async (c) => {
         title: body.title,
         content: body.content,
         authorId: authorId,
+        tags: {
+          connectOrCreate: (body.tags || []).map((tag: string) => ({
+            where: { name: tag },
+            create: { name: tag },
+          })),
+        },
       },
     });
     c.status(200);
@@ -117,6 +124,19 @@ blogRouter.get("/bulk", async (c) => {
             name: true,
           },
         },
+        tags: {
+      select: {
+        name: true
+      }
+    },
+        _count: {
+      select: { likes: true }
+    },
+    likes: {
+      where: {
+        userId: c.get("userId")
+      }
+    }
       },
     });
 
@@ -150,6 +170,19 @@ blogRouter.get("/:id", async (c) => {
             name: true,
           },
         },
+        tags: {
+      select: {
+        name: true
+      }
+    },
+        _count: {
+      select: { likes: true }
+    },
+    likes: {
+      where: {
+        userId: c.get("userId")
+      }    },
+    
       },
     });
     c.status(200);
@@ -159,4 +192,47 @@ blogRouter.get("/:id", async (c) => {
     c.status(500);
     return c.json({ error: "Failed to fetch post" });
   }
+});
+
+blogRouter.post("/like/:id", async (c) => {
+  const postId = c.req.param("id");
+  const userId = c.get("userId");
+  const prisma = new PrismaClient({ datasourceUrl: c.env.DATABASE_URL }).$extends(withAccelerate());
+
+  try {
+    const existingLike = await prisma.like.findUnique({
+      where: { userId_postId: { userId, postId } }
+    });
+
+    if (existingLike) {
+      await prisma.like.delete({ where: { id: existingLike.id } });
+      return c.json({ message: "Unliked" });
+    }
+    await prisma.like.create({ data: { userId, postId } });
+    return c.json({ message: "Liked" });
+  } catch (e) {
+    return c.json({ error: "Action failed" }, 500);
+  }
+});
+
+blogRouter.post("/summarize/:id", async (c) => {
+  const id = c.req.param("id");
+  const prisma = new PrismaClient({ datasourceUrl: c.env.DATABASE_URL }).$extends(withAccelerate());
+
+  const post = await prisma.post.findUnique({ where: { id } });
+  if (!post) return c.json({ error: "Not found" }, 404);
+
+  if (!c.env.AI) {
+      console.error("AI Binding missing in wrangler.toml");
+      return c.json({ error: "AI configuration error" }, 500);
+    }
+
+  const response = await c.env.AI.run("@cf/meta/llama-3-8b-instruct", {
+    messages: [
+      { role: "system", content: "Summarize this blog post in exactly 2 sentences." },
+      { role: "user", content: post.content },
+    ],
+  });
+
+  return c.json({ summary: response.response });
 });

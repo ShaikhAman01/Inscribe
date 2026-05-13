@@ -12,6 +12,8 @@ export interface Blog {
   author: {
     name: string;
   };
+  tags: { name: string }[];
+  _count: { likes: number };
 }
 
 export const useBlog = ({ id }: { id: string }) => {
@@ -97,4 +99,11 @@ export const usePublicBlogs = () => {
   }, []);
 
   return { loading, blogs };
+};
+
+export const toggleLike = async (id: string) => {
+  const token = localStorage.getItem("token");
+  await axios.post(`${BACKEND_URL}/api/v1/blog/like/${id}`, {}, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
 };

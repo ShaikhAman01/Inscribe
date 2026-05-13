@@ -1,4 +1,3 @@
-// Publish.jsx
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +13,7 @@ import {
   ContentPreview,
   WordCount,
   EditorActions,
+  TagInput,
 } from "../components/EditorComponents";
 
 
@@ -21,6 +21,7 @@ const Publish = () => {
   const { showPromiseToast } = useToast();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [tags, setTags] = useState("");
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   
   const MAX_TITLE_LENGTH = 100;
@@ -44,11 +45,11 @@ const Publish = () => {
     }
 
     if (title.length < MIN_TITLE_LENGTH) {
-      toast.info("Title must be minimum 3 characters long");
+      toast.info(`Title must be at least ${MIN_TITLE_LENGTH} characters`);
       return;
     }
     if (content.length < MIN_CONTENT_LENGTH) {
-      toast.info("Minimum content length is 10");
+      toast.info(`Content must be at least ${MIN_CONTENT_LENGTH} characters`);
       return;
     }
 
@@ -60,11 +61,16 @@ const Publish = () => {
       return;
     }
 
+    const tagsArray = tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t !== "");
+
     showPromiseToast(
       async () => {
         const response = await axios.post(
           `${BACKEND_URL}/api/v1/blog`,
-          { title, content },
+          { title, content, tags: tagsArray },
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setTimeout(() => navigate(`/blog/${response.data.id}`), 1000);
@@ -107,8 +113,7 @@ const Publish = () => {
   `;
 
   const handleSearch = () => {
-    console.log("to avoid errors");
-  };
+    console.log("Search placeholder");  };
   return (
     <div className="min-h-screen bg-stone-50">
       <style>{containerStyle}</style>
@@ -120,6 +125,7 @@ const Publish = () => {
             setTitle={setTitle}
             maxLength={MAX_TITLE_LENGTH}
           />
+          <TagInput tags={tags} setTags={setTags} />
 
           <div className="mt-6">
             {isPreviewMode ? (

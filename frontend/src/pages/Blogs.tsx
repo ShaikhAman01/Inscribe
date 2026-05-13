@@ -47,103 +47,65 @@ const Blogs = () => {
   };
   
 
-  return (
-    <div>
-      <Appbar onSearch={handleSearch} />
-      <div className="flex justify-center py-3 bg-white">
-        <div>
+return (
+  <div className="min-h-screen bg-stone-50/50">
+    <Appbar onSearch={handleSearch} />
+    
+    {/* Main Content */}
+    <div className="flex justify-center py-10 px-4">
+      <div className="grid grid-cols-12 gap-10 max-w-7xl w-full">
+        
+        <div className="col-span-12 lg:col-span-8 space-y-6">
           {loading ? (
-            Array.from({ length: 5 }).map((_, index) => (
-              <BlogSkeleton key={index} />
-            ))
+            Array.from({ length: 5 }).map((_, i) => <BlogSkeleton key={i} />)
           ) : filteredBlogs.length ? (
             currentBlogs.map((blog) => (
-              <BlogCard
-                key={blog.id}
-                id={blog.id}
-                authorName={blog.author?.name || "Anonymous"}
-                title={blog.title}
-                content={stripHtml(blog.content)}
-                createdAt={formattedDate(blog.createdAt)}
-              />
+              <div key={blog.id} className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
+                <BlogCard
+                  id={blog.id}
+                  authorName={blog.author?.name || "Anonymous"}
+                  title={blog.title}
+                  content={stripHtml(blog.content)}
+                  createdAt={formattedDate(blog.createdAt)}
+                  tags={blog.tags}
+                />
+              </div>
             ))
           ) : (
-            <div>No Blogs Available</div>
+            <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-stone-200">
+              <p className="text-stone-400 font-medium">No stories found matching your search.</p>
+            </div>
           )}
 
-          {/* //Pagination */}
-          <nav className="flex items-center gap-x-1 justify-center py-5">
-            <button
-              type="button"
-              className="min-h-[38px] min-w-[38px] py-2 px-2.5 inline-flex justify-center items-center gap-x-1.5 text-sm rounded-lg text-gray-800 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              <svg
-                className="shrink-0 size-3.5"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="m15 18-6-6 6-6"></path>
-              </svg>
-              <span>Previous</span>
-            </button>
-
-            {Array.from({ length: totalPages }, (_, index) => (
-              <button
-                key={index}
-                className={`px-3 py-1 mx-1 ${
-                  currentPage === index + 1
-                    ? "bg-slate-950  text-white"
-                    : "bg-gray-200"
-                } rounded hover:bg-gray-300`}
-                onClick={() => setCurrentPage(index + 1)}
-              >
-                {index + 1}
-              </button>
-            ))}
-
-            <button
-              type="button"
-              className="min-h-[38px] min-w-[38px] py-2 px-2.5 inline-flex justify-center items-center gap-x-1.5 text-sm rounded-lg text-gray-800 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-            >
-              <span>Next</span>
-              <svg
-                className="shrink-0 size-3.5"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="m9 18 6-6-6-6"></path>
-              </svg>
-            </button>
-          </nav>
         </div>
+
+        {/* sidebar */}
+        <aside className="hidden lg:block lg:col-span-4 space-y-8">
+          <div className="sticky top-24">
+            <div className="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm">
+              <h2 className="font-black text-stone-900 uppercase tracking-widest text-xs mb-4">Recommended Topics</h2>
+              <div className="flex flex-wrap gap-2">
+                {["Technology", "Programming", "Arch Linux", "Productivity", "Writing", "AI"].map(topic => (
+                  <button key={topic} className="px-4 py-2 bg-stone-50 hover:bg-stone-100 text-stone-600 rounded-full text-sm font-medium transition-colors">
+                    {topic}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-6 px-6">
+               <p className="text-xs text-stone-400 font-bold uppercase tracking-widest">About Inscribe</p>
+               <p className="text-sm text-stone-500 mt-2 leading-relaxed">
+                 A minimalist space for deep thinkers. Built with Hono, Prisma, and Cloudflare.
+               </p>
+            </div>
+          </div>
+        </aside>
+
       </div>
-      <footer className="border-t border-stone-200 bg-white py-6 text-center text-stone-600">
-                <p>&copy; {new Date().getFullYear()} Inscribe. All rights reserved.</p>
-                <p>Made with ♡ by   
-                    <a href="https://github.com/shaikhaman01"> Aman </a></p>
-            </footer>
     </div>
-  );
+  </div>
+);
 };
 
 export default Blogs;

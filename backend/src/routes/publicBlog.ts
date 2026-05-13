@@ -5,10 +5,6 @@ import { Hono } from "hono";
 export const publicBlogRouter = new Hono<{
   Bindings: {
     DATABASE_URL: string;
-    JWT_SECRET: string;
-  };
-  Variables: {
-    userId: string;
   };
 }>();
 
@@ -17,27 +13,31 @@ publicBlogRouter.get("/", async (c) => {
       datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate());
   
-    
     try {
-      const post = await prisma.post.findMany({
+      const posts = await prisma.post.findMany({
         where: {
-            author: {
-              name: {
-                not: "johndoe",
-              },
-            },},
-        select: {
-          content: true,
-          title: true,
-          id: true,
+            published: true, // Only show published blogs
         },
-        take: 3,
+        select: {
+          id: true,
+          title: true,
+          content: true,
+          createdAt: true,
+          author: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        take: 6,
+        orderBy: {
+            createdAt: 'desc'
+        }
       });
-      c.status(200);
-      return c.json({ post });
+
+      return c.json({ post: posts });
     } catch (e) {
-      console.error("Error fetching posts", e);
-      c.status(500);
-      return c.json({ error: "Failed to fetch posts" });
+      console.error("Featured Blog Error:", e);
+      return c.json({ error: "Internal Server Error" }, 500);
     }
-  });
+});
