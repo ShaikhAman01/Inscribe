@@ -20,7 +20,7 @@ const BlogCard = ({
 }: BlogCardProps) => {
   return (
     <Link to={`/blog/${id}`} className="block group">
-      <div className="border-b border-stone-100 pb-6 mb-6 p-4 w-screen max-w-screen-lg cursor-pointer transition-all hover:bg-stone-50/50 rounded-2xl">
+      <div className="border-b border-stone-100 pb-6 mb-6 p-4 w-screen max-w-screen-lg cursor-pointer active:scale-[0.99] transition-transform hover:bg-stone-50/50 rounded-2xl">
         {/* Header: Author & Date */}
         <div className="flex items-center gap-3">
           <Avatar name={authorName} size="big" />
@@ -70,7 +70,9 @@ export function Avatar({
   name: string;
   size?: "small" | "big";
 }) {
-  const initials = name && name.length > 0 ? name[0].toUpperCase() : "U";
+  // Safety check: ensure name is a string to prevent "can't convert to string" error
+  const safeName = typeof name === 'string' ? name : "Anonymous";
+  const initials = safeName.length > 0 ? safeName[0].toUpperCase() : "U";
   
   const colors = ["bg-stone-800", "bg-slate-700", "bg-zinc-800", "bg-neutral-700"];
   const colorClass = colors[initials.charCodeAt(0) % colors.length];

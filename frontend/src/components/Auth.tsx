@@ -1,9 +1,9 @@
-
 import { SignupInput } from "@shaikhaman/medium-common";
 import axios from "axios";
 import { ChangeEvent, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, useToast } from "./Toast";
+import { Eye, EyeOff, User, Mail, Lock } from "lucide-react"; // Icons for better UI
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -11,6 +11,7 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
   const { showPromiseToast } = useToast();
   const navigate = useNavigate();
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false); // Eye toggle state
   const [postInputs, setPostInputs] = useState<SignupInput>({
     name: "",
     username: "",
@@ -18,128 +19,108 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem('token'); // Check for token
+    const token = localStorage.getItem('token');
     if (token) {
-      navigate('/blogs'); // Redirect to blogs if authenticated
+      navigate('/blogs');
     }
   }, [navigate]);
 
   async function sendRequest() {
     if (postInputs.password.length < 6) {
-      console.log("Sending request with inputs:", postInputs); // Log inputs before sending
       setPasswordError("Password must be at least 6 characters long");
-      return; // 
+      return;
     }
     showPromiseToast(
       async () => {
         const response = await axios.post(
-          `${BACKEND_URL}/api/v1/user/${
-            type === "signup" ? "signup" : "signin"
-          }`,
+          `${BACKEND_URL}/api/v1/user/${type === "signup" ? "signup" : "signin"}`,
           postInputs
         );
-        console.log("Response data:", response.data);
         if (response.data && response.data.jwt) {
           const { jwt, name } = response.data;
           localStorage.setItem("token", jwt);
-
-          console.log("Name from response:", name);
-          if (name) {
-            localStorage.setItem("name", name);
-          } else {
-            console.warn("Name not received from server");
-          }
-
-          setTimeout(() => {
-            navigate("/blogs");
-          }, 1000);
+          if (name) localStorage.setItem("name", name);
+          setTimeout(() => navigate("/blogs"), 1000);
         } else {
-          throw new Error("Invalid response from server");
+          throw new Error("Invalid response");
         }
       },
       {
         loading: "Authenticating...",
-        success: `Successfully ${
-          type === "signup" ? "signed up" : "signed in"
-        }!`,
-        error: "Authentication failed. Please try again.",
+        success: `Successfully ${type === "signup" ? "signed up" : "signed in"}!`,
+        error: "Authentication failed. Check your credentials.",
       }
     );
   }
-  // Create An Account
+
   return (
     <div className="h-screen flex justify-center flex-col bg-stone-50">
       <div className="flex justify-center">
-        <div>
-          <div className="px-10">
-            <div className="text-3xl font-extrabold text-center text-stone-900">
-            {type === "signup"
-                ? "Create an Account"
-                : "Sign In to Account"}
-            </div>
-            <div className="text-stone-600 text-center">
-              {type === "signup"
-                ? "Already Have an Account?"
-                : "Don't Have an account?"}
+        <div className="w-full max-w-md px-8">
+          <div className="mb-10 text-center">
+            <h1 className="text-4xl font-black text-stone-900 tracking-tight">
+              {type === "signup" ? "Create an account" : "Welcome back"}
+            </h1>
+            <p className="text-stone-500 mt-3 font-medium">
+              {type === "signup" ? "Already have an account?" : "New to Inscribe?"}
               <Link
-                className="underline pl-1"
-                to={type == "signup" ? "/signin" : "/signup"}
+                className="underline pl-1 text-stone-900 font-bold"
+                to={type === "signup" ? "/signin" : "/signup"}
               >
-                {type == "signup" ? "Login" : "signup"}
+                {type === "signup" ? "Log in" : "Create one"}
               </Link>
-            </div>
+            </p>
           </div>
 
-          <div className="pt-6">
-            {type === "signup" ? (
+          <div className="space-y-4">
+            {type === "signup" && (
               <LabelledInput
                 label="Name"
                 placeholder="John Doe"
+                icon={<User className="w-4 h-4" />}
+                onChange={(e) => setPostInputs({ ...postInputs, name: e.target.value })}
+              />
+            )}
+            <LabelledInput
+              label="Email"
+              placeholder="name@example.com"
+              type="email"
+              icon={<Mail className="w-4 h-4" />}
+              onChange={(e) => setPostInputs({ ...postInputs, username: e.target.value })}
+            />
+            <div className="relative">
+              <LabelledInput
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                icon={<Lock className="w-4 h-4" />}
                 onChange={(e) => {
-                  setPostInputs({
-                    ...postInputs,
-                    name: e.target.value,
-                  });
+                  const val = e.target.value;
+                  setPasswordError(val.length < 6 ? "Minimum 6 characters" : null);
+                  setPostInputs({ ...postInputs, password: val });
                 }}
               />
-            ) : null}
-            <LabelledInput
-              label="Username"
-              placeholder="johndoe@gmail.com"
-              type={"email"}
-              onChange={(e) => {
-                setPostInputs({
-                  ...postInputs,
-                  username: e.target.value,
-                });
-              }}
-            />
-            <LabelledInput
-              label="Password"
-              type={"password"}
-              placeholder=""
-              onChange={(e) => {
-                const password = e.target.value;
-                if (password.length < 6) {
-                  setPasswordError("Password must be at least 6 characters long");
-                } else {
-                  setPasswordError(null);
-                }
-                setPostInputs({
-                  ...postInputs,
-                  password: password,
-                });
-              }}
-            />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-[38px] text-stone-400 hover:text-stone-600 transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+
             {passwordError && (
-              <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+              <p className="text-red-500 text-xs font-bold uppercase tracking-wider animate-pulse">
+                {passwordError}
+              </p>
             )}
+
             <button
               onClick={sendRequest}
               type="button"
-              className="w-full mt-4 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-md px-5 py-2.5 me-2 mb-2"
+              className="w-full mt-6 text-white bg-stone-900 hover:bg-stone-800 focus:outline-none focus:ring-4 focus:ring-stone-200 font-bold rounded-xl text-md px-5 py-4 transition-all active:scale-[0.98] shadow-lg shadow-stone-200"
             >
-              {type === "signup" ? "Sign up" : "Sign in"}
+              {type === "signup" ? "Create account" : "Sign in"}
             </button>
           </div>
         </div>
@@ -154,27 +135,31 @@ interface LabelledInputType {
   placeholder: string;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   type?: string;
+  icon?: React.ReactNode;
 }
 
-function LabelledInput({
-  label,
-  placeholder,
-  onChange,
-  type,
-}: LabelledInputType) {
+function LabelledInput({ label, placeholder, onChange, type, icon }: LabelledInputType) {
   return (
-    <div>
-      <label className="block mb-2 text-md font-semibold text-gray-900  ">
+    <div className="w-full">
+      <label className="block mb-2 text-xs font-black uppercase tracking-widest text-stone-500">
         {label}
       </label>
-      <input
-        onChange={onChange}
-        type={type || "text"}
-        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 mb-2"
-        placeholder={placeholder}
-        required
-      />
+      <div className="relative flex items-center">
+        {icon && (
+          <div className="absolute left-3 text-stone-400">
+            {icon}
+          </div>
+        )}
+        <input
+          onChange={onChange}
+          type={type || "text"}
+          className={`bg-white border border-stone-200 text-stone-900 text-sm rounded-xl focus:ring-2 focus:ring-stone-900 focus:border-transparent block w-full ${icon ? 'pl-10' : 'pl-4'} p-3 transition-all placeholder-stone-300`}
+          placeholder={placeholder}
+          required
+        />
+      </div>
     </div>
   );
 }
+
 export default Auth;

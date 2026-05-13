@@ -6,6 +6,7 @@ import DOMPurify from "dompurify";
 import Comments from "./Comments";
 import { Heart, Sparkles, Loader2 } from "lucide-react";
 import axios from "axios";
+import { toast } from "sonner"; // Ensure this import is here
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -15,19 +16,19 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
   const [summary, setSummary] = useState("");
   const [isSummarizing, setIsSummarizing] = useState(false);
 
-const handleLike = async () => {
-  const currentlyLiked = isLiked;
-  setIsLiked(!currentlyLiked);
-  setLikes(prev => currentlyLiked ? prev - 1 : prev + 1);
+  const handleLike = async () => {
+    const currentlyLiked = isLiked;
+    setIsLiked(!currentlyLiked);
+    setLikes(prev => currentlyLiked ? prev - 1 : prev + 1);
 
-  try {
-    await toggleLike(blog.id);
-  } catch (e) {
-    setIsLiked(currentlyLiked);
-    setLikes(prev => currentlyLiked ? prev + 1 : prev - 1);
-    toast.error("Failed to sync like with server");
-  }
-};
+    try {
+      await toggleLike(blog.id);
+    } catch (e) {
+      setIsLiked(currentlyLiked);
+      setLikes(prev => currentlyLiked ? prev + 1 : prev - 1);
+      toast.error("Failed to sync like with server");
+    }
+  };
 
   const generateSummary = async () => {
     setIsSummarizing(true);
@@ -85,7 +86,6 @@ const handleLike = async () => {
             </button>
           </div>
 
-          {/* Tag List */}
           {blog.tags && blog.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 pt-5">
               {blog.tags.map((tag) => (
@@ -99,7 +99,6 @@ const handleLike = async () => {
             </div>
           )}
 
-          {/* AI Summary Section */}
           <div className="mt-8 p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl border border-indigo-100 shadow-sm">
             {!summary ? (
               <button
@@ -139,7 +138,6 @@ const handleLike = async () => {
           />
         </div>
 
-        {/* Author Sidebar */}
         <div className="col-span-12 lg:col-span-4 lg:pl-12 pt-10 lg:pt-0">
           <div className="sticky top-24">
             <div className="text-stone-500 font-bold text-sm uppercase tracking-widest border-b border-stone-100 pb-2 mb-4">
