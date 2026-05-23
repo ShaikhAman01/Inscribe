@@ -14,6 +14,7 @@ export interface Blog {
   };
   tags: { name: string }[];
   _count: { likes: number };
+  likes?: number;
 }
 
 export const useBlog = ({ id }: { id: string }) => {
