@@ -12,7 +12,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const BlogPost = ({ blog }: { blog: Blog }) => {
   const [likes, setLikes] = useState(blog._count?.likes || 0);
-  const [isLiked, setIsLiked] = useState(blog.likes?.length > 0);
+  const [isLiked, setIsLiked] = useState(Array.isArray(blog.likes) ? blog.likes.length > 0 : false);
   const [summary, setSummary] = useState("");
   const [isSummarizing, setIsSummarizing] = useState(false);
 

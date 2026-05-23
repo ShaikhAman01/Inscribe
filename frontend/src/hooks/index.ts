@@ -20,11 +20,10 @@ export interface Blog {
 export const useBlog = ({ id }: { id: string }) => {
   const [loading, setLoading] = useState(true);
   const [blog, setBlog] = useState<Blog>();
-  const token = localStorage.getItem("token");
-  console.log("token:", token);
   const navigate = useNavigate()
 
   useEffect(() => {
+      const token = localStorage.getItem("token");
     axios
       .get(`${BACKEND_URL}/api/v1/blog/${id}`, {
         headers: {
@@ -42,8 +41,6 @@ export const useBlog = ({ id }: { id: string }) => {
         navigate('/signup')
       });
   }, [id]);
-
-  console.log(blog);
 
   return { loading, blog };
 };
