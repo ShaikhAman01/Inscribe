@@ -23,6 +23,7 @@ const Publish = () => {
   const [content, setContent] = useState("");
   const [tags, setTags] = useState("");
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   
   const MAX_TITLE_LENGTH = 100;
   const MAX_CONTENT_LENGTH = 5000;
@@ -36,7 +37,7 @@ const Publish = () => {
     if (!token) {
       navigate("/signup"); // Redirect to signup if not authenticated
     }
-  }, [navigate]);
+  }, [navigate, token]);
 
   const handlePublish = async () => {
     if (!title.trim() || !content.trim()) {
@@ -66,14 +67,20 @@ const Publish = () => {
       .map((t) => t.trim())
       .filter((t) => t !== "");
 
+    setIsPublishing(true);
     showPromiseToast(
       async () => {
-        const response = await axios.post(
-          `${BACKEND_URL}/api/v1/blog`,
-          { title, content, tags: tagsArray },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setTimeout(() => navigate(`/blog/${response.data.id}`), 1000);
+        try {
+          const response = await axios.post(
+            `${BACKEND_URL}/api/v1/blog`,
+            { title, content, tags: tagsArray },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setTimeout(() => navigate(`/blog/${response.data.id}`), 1000);
+        } catch (error) {
+          setIsPublishing(false);
+          throw error;
+        }
       },
       {
         loading: "Creating your post...",
@@ -112,12 +119,10 @@ const Publish = () => {
     }
   `;
 
-  const handleSearch = () => {
-    console.log("Search placeholder");  };
   return (
     <div className="min-h-screen bg-stone-50">
       <style>{containerStyle}</style>
-      <Appbar onSearch={handleSearch} />
+      <Appbar />
       <main className="max-w-5xl mx-auto p-6 space-y-6">
         <div className="bg-white rounded-lg shadow-sm p-6 max-w-5xl">
           <TitleInput
@@ -140,6 +145,7 @@ const Publish = () => {
             onPreview={() => setIsPreviewMode(!isPreviewMode)}
             onPublish={handlePublish}
             isPreviewMode={isPreviewMode}
+            isPublishing={isPublishing}
           />
         </div>
       </main>

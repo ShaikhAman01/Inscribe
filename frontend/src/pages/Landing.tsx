@@ -287,17 +287,16 @@ export function ComingSoon() {
     "Launching soon! 🚀",
   ];
 
-  const [currentMessage, setCurrentMessage] = useState(messages[0]);
   const [index, setIndex] = useState(0);
+  const currentMessage = messages[index];
 
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prevIndex) => (prevIndex + 1) % messages.length);
-      setCurrentMessage(messages[index]);
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [index]);
+  }, [messages.length]);
 
   return (
     <div className="flex h-screen items-center justify-center bg-gray-900 text-white text-center px-6">

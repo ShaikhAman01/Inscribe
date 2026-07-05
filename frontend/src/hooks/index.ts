@@ -20,10 +20,10 @@ export interface Blog {
 export const useBlog = ({ id }: { id: string }) => {
   const [loading, setLoading] = useState(true);
   const [blog, setBlog] = useState<Blog>();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
     axios
       .get(`${BACKEND_URL}/api/v1/blog/${id}`, {
         headers: {
@@ -31,16 +31,15 @@ export const useBlog = ({ id }: { id: string }) => {
         },
       })
       .then((response) => {
-        console.log(response.data);
         setBlog(response.data.post);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Error fetching blogs:", error);
+        console.error("Error fetching blog:", error);
         setLoading(false);
-        navigate('/signup')
+        navigate("/signup");
       });
-  }, [id]);
+  }, [id, navigate]);
 
   return { loading, blog };
 };
@@ -48,10 +47,9 @@ export const useBlog = ({ id }: { id: string }) => {
 export const useBlogs = () => {
   const [loading, setLoading] = useState(true);
   const [blogs, setBlogs] = useState<Blog[]>([]);
-  const token = localStorage.getItem("token");
-  console.log("token:", token);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
     axios
       .get(`${BACKEND_URL}/api/v1/blog/bulk`, {
         headers: {
@@ -59,7 +57,6 @@ export const useBlogs = () => {
         },
       })
       .then((response) => {
-        console.log(response.data);
         setBlogs(response.data.post);
         setLoading(false);
       })
@@ -68,8 +65,6 @@ export const useBlogs = () => {
         setLoading(false);
       });
   }, []);
-
-  console.log(blogs);
 
   return { loading, blogs };
 };

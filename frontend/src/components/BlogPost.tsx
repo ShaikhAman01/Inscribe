@@ -4,9 +4,9 @@ import { formattedDate } from "../utils/FormattedDate";
 import { Avatar } from "./BlogCard";
 import DOMPurify from "dompurify";
 import Comments from "./Comments";
-import { Heart, Sparkles, Loader2 } from "lucide-react";
+import { Heart, Sparkles, Loader2, Clock } from "lucide-react";
 import axios from "axios";
-import { toast } from "sonner"; // Ensure this import is here
+import { toast } from "sonner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -16,6 +16,11 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
   const [summary, setSummary] = useState("");
   const [isSummarizing, setIsSummarizing] = useState(false);
 
+  const readingTime = Math.max(
+    1,
+    Math.ceil(blog.content.replace(/<[^>]*>/g, "").length / 1000)
+  );
+
   const handleLike = async () => {
     const currentlyLiked = isLiked;
     setIsLiked(!currentlyLiked);
@@ -23,7 +28,7 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
 
     try {
       await toggleLike(blog.id);
-    } catch (e) {
+    } catch {
       setIsLiked(currentlyLiked);
       setLikes(prev => currentlyLiked ? prev + 1 : prev - 1);
       toast.error("Failed to sync like with server");
@@ -44,6 +49,7 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
       setSummary(res.data.summary);
     } catch (e) {
       console.error("AI summarization failed", e);
+      toast.error("Couldn't generate a summary. Please try again.");
     } finally {
       setIsSummarizing(false);
     }
@@ -55,6 +61,9 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
     .blog-content p { margin-bottom: 1rem; line-height: 1.75; }
     .blog-content ul, .blog-content ol { margin-left: 1.5rem; margin-bottom: 1rem; }
     .blog-content li { margin-bottom: 0.5rem; }
+    .blog-content a { text-decoration: underline; text-underline-offset: 2px; }
+    .blog-content img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1.5rem 0; }
+    .blog-content blockquote { border-left: 3px solid #d6d3d1; padding-left: 1rem; color: #57534e; font-style: italic; margin-bottom: 1rem; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
   `;
@@ -64,24 +73,31 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
       <style>{containerStyle}</style>
       <div className="grid grid-cols-12 xl:px-40 lg:px-20 px-5 w-full pt-10">
         <div className="col-span-12 lg:col-span-8">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-4xl font-black text-stone-900">
+          <div className="flex justify-between items-start gap-4">
+            <div className="min-w-0">
+              <h1 className="text-3xl sm:text-4xl font-black text-stone-900 tracking-tight break-words">
                 {blog.title}
               </h1>
-              <p className="pt-3 text-lg text-slate-500 font-normal">
-                {formattedDate(blog.createdAt)}
-              </p>
+              <div className="pt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-stone-500">
+                <span>{formattedDate(blog.createdAt)}</span>
+                <span aria-hidden="true" className="text-stone-300">·</span>
+                <span className="flex items-center gap-1.5 text-sm font-medium">
+                  <Clock className="w-4 h-4" aria-hidden="true" />
+                  {readingTime} min read
+                </span>
+              </div>
             </div>
             <button
               onClick={handleLike}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 ${
+              aria-label={isLiked ? "Unlike this story" : "Like this story"}
+              aria-pressed={isLiked}
+              className={`flex shrink-0 items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 ${
                 isLiked
                   ? "bg-red-50 border-red-200 text-red-500 shadow-sm"
-                  : "bg-white border-stone-200 text-stone-500 hover:border-stone-300"
+                  : "bg-white border-stone-200 text-stone-500 hover:border-stone-300 hover:text-stone-700"
               }`}
             >
-              <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
+              <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} aria-hidden="true" />
               <span className="font-bold">{likes}</span>
             </button>
           </div>
@@ -131,7 +147,7 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
           </div>
 
           <div
-            className="pt-10 blog-content text-stone-800"
+            className="pt-10 blog-content text-stone-800 text-lg break-words"
             dangerouslySetInnerHTML={{
               __html: DOMPurify.sanitize(blog.content),
             }}

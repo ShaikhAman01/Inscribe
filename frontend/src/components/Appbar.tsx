@@ -7,50 +7,40 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Feather, LogOut, SquarePen } from "lucide-react";
 
 interface AppbarProps {
-  onSearch: (query: string) => void;
+  searchTerm?: string;
+  onSearch?: (query: string) => void;
 }
 
-const Appbar: React.FC<AppbarProps> = ({ onSearch }) => {
-
+const Appbar: React.FC<AppbarProps> = ({ searchTerm = "", onSearch }) => {
   return (
-    <div className="border-b flex justify-between items-center px-10 py-3 h-16">
-      <div className="flex items-center space-x-6">
+    <header className="sticky top-0 z-40 border-b border-stone-100 bg-white/90 backdrop-blur-sm">
+      <div className="flex justify-between items-center gap-3 px-4 sm:px-6 lg:px-10 h-16">
         <Link
           to={"/blogs"}
-          className="flex items-center text-4xl font-bold text-stone-800"
+          className="flex items-center text-2xl sm:text-3xl font-black tracking-tight text-stone-800 shrink-0"
         >
-          <Feather className="h-6 w-6 mr-2" />
-          Inscribe
+          <Feather className="h-6 w-6 mr-2" aria-hidden="true" />
+          <span className="hidden sm:inline">Inscribe</span>
         </Link>
-      </div>
-      <div className="flex-grow max-w-md mx-2 px-2">
-        <SearchBar onSearch={onSearch} />
-      </div>
 
-      <div className="flex items-center space-x-4">
-        <Link
-          to={"/publish"}
-          className="mr-5 hidden  md:flex items-center hover:text-blue-700 transition-colors duration-200"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="h-6 w-6"
+        {onSearch && (
+          <div className="flex-grow max-w-md">
+            <SearchBar value={searchTerm} onSearch={onSearch} />
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          <Link
+            to={"/publish"}
+            className="hidden md:flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-            />
-          </svg>
-          <span className="ml-1">Write</span>
-        </Link>
-        <ProfileDropdown />
+            <SquarePen className="h-4 w-4" aria-hidden="true" />
+            Write
+          </Link>
+          <ProfileDropdown />
+        </div>
       </div>
-    </div>
+    </header>
   );
 };
 
@@ -63,6 +53,8 @@ const ProfileDropdown: React.FC = () => {
   const name = localStorage.getItem("name")?.toUpperCase();
 
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
@@ -71,10 +63,17 @@ const ProfileDropdown: React.FC = () => {
         setIsOpen(false);
       }
     };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsOpen(false);
+    };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen]);
 
   const handleLogoutClick = () => {
     setIsModalVisible(true);
@@ -86,7 +85,7 @@ const ProfileDropdown: React.FC = () => {
     localStorage.removeItem("token");
     showToast("Signed out successfully", "success");
     setIsModalVisible(false);
-    
+
     setTimeout(() => {
       navigate("/signin");
     }, 1000);
@@ -101,47 +100,48 @@ const ProfileDropdown: React.FC = () => {
       <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center space-x-2 rounded-full bg-gray-100 p-2 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label="Account menu"
+          aria-expanded={isOpen}
+          aria-haspopup="menu"
+          className="flex items-center gap-1.5 rounded-full bg-stone-100 p-1.5 pr-2 hover:bg-stone-200 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
         >
           <Avatar name={name || "Unknown"} />
           <ChevronDown
-            className={`h-4 w-4 transition-transform duration-200 ${
+            aria-hidden="true"
+            className={`h-4 w-4 text-stone-500 transition-transform duration-200 ${
               isOpen ? "rotate-180" : ""
             }`}
           />
         </button>
 
-
-
         {isOpen && (
           <div
-            className="absolute right-0 mt-2 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5"
+            role="menu"
+            className="absolute right-0 mt-2 w-48 rounded-xl bg-white py-1 shadow-lg ring-1 ring-stone-900/5 border border-stone-100"
           >
-            <div className="px-4 py-2 border-b border-gray-100">
-              <p className="text-sm font-medium text-gray-900">{name}</p>
+            <div className="px-4 py-2 border-b border-stone-100">
+              <p className="text-sm font-bold text-stone-900 truncate">{name}</p>
             </div>
- <p className="md:hidden w-full px-4 py-2 text-sm border-b border-gray-100 flex items-center  hover:bg-gray-100">
             <Link
-          to={"/publish"}
-          className="flex"
-        >
-          <SquarePen className="mr-2 h-4 w-4"/>
-          Write
-        </Link>
-        </p>
-
+              to={"/publish"}
+              role="menuitem"
+              className="md:hidden flex w-full items-center px-4 py-2 text-sm text-stone-700 border-b border-stone-100 hover:bg-stone-50 transition-colors"
+            >
+              <SquarePen className="mr-2 h-4 w-4" aria-hidden="true" />
+              Write
+            </Link>
             <button
-              className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+              role="menuitem"
+              className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-stone-50 transition-colors"
               onClick={handleLogoutClick}
             >
-              <LogOut className="mr-2 h-4 w-4" />
+              <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
               Logout
             </button>
           </div>
         )}
-
       </div>
-        <ToastContainer />
+      <ToastContainer />
 
       <Modal
         isVisible={isModalVisible}

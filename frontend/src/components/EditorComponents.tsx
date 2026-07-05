@@ -1,6 +1,6 @@
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { Eye, Edit2, Send, Tag as TagIcon } from "lucide-react";
+import { Eye, Edit2, Send, Tag as TagIcon, Loader2 } from "lucide-react";
 
 const QUILL_MODULES = {
   toolbar: [
@@ -119,29 +119,39 @@ interface EditorActionsProps {
   onPreview: () => void;
   onPublish: () => void;
   isPreviewMode: boolean;
+  isPublishing?: boolean;
 }
 
-export const EditorActions = ({ onPreview, onPublish, isPreviewMode }: EditorActionsProps) => (
-  <div className="flex items-center justify-between mt-10 pt-6 border-t border-stone-100">
+export const EditorActions = ({ onPreview, onPublish, isPreviewMode, isPublishing }: EditorActionsProps) => (
+  <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-10 pt-6 border-t border-stone-100">
     <button
       onClick={onPreview}
-      className="flex items-center gap-2 px-6 py-3 font-bold text-stone-600 bg-stone-100 rounded-full hover:bg-stone-200 transition-all active:scale-95"
+      className="flex items-center justify-center gap-2 px-6 py-3 font-bold text-stone-600 bg-stone-100 rounded-full hover:bg-stone-200 transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
     >
       {isPreviewMode ? (
         <>
-          <Edit2 className="w-4 h-4" /> Edit Story
+          <Edit2 className="w-4 h-4" aria-hidden="true" /> Edit Story
         </>
       ) : (
         <>
-          <Eye className="w-4 h-4" /> Preview
+          <Eye className="w-4 h-4" aria-hidden="true" /> Preview
         </>
       )}
     </button>
     <button
       onClick={onPublish}
-      className="flex items-center gap-2 px-8 py-3 font-black text-white bg-stone-900 rounded-full hover:bg-stone-800 shadow-lg shadow-stone-200 transition-all active:scale-95"
+      disabled={isPublishing}
+      className="flex items-center justify-center gap-2 px-8 py-3 font-black text-white bg-stone-900 rounded-full hover:bg-stone-800 shadow-lg shadow-stone-200 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2"
     >
-      <Send className="w-4 h-4" /> Publish
+      {isPublishing ? (
+        <>
+          <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> Publishing...
+        </>
+      ) : (
+        <>
+          <Send className="w-4 h-4" aria-hidden="true" /> Publish
+        </>
+      )}
     </button>
   </div>
 );

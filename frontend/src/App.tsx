@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { lazy, Suspense } from "react";
+import { Loader2 } from "lucide-react";
 import Landing from "./pages/Landing";
 
 const Signup = lazy(() => import("./pages/Signup"));
@@ -12,7 +13,13 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        <Suspense>
+        <Suspense
+          fallback={
+            <div className="min-h-screen flex items-center justify-center bg-stone-50">
+              <Loader2 className="w-8 h-8 animate-spin text-stone-400" aria-label="Loading page" />
+            </div>
+          }
+        >
           <Routes>
             <Route path="/" element={<Landing/>} />
             <Route path="/signup" element={<Signup />} />

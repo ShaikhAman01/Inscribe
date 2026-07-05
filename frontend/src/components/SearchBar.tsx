@@ -1,45 +1,34 @@
-import { useState } from "react";
+import { Search, X } from "lucide-react";
 
 interface SearchBarProps {
-  onSearch: (value: string) => void; // Function type for onSearch
+  value: string;
+  onSearch: (value: string) => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
-  const [searchTerm, setSearchTerm] = useState<string>("");
-
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    setSearchTerm(value);
-    onSearch(value); // Call the parent-provided function
-  };
-
+const SearchBar: React.FC<SearchBarProps> = ({ value, onSearch }) => {
   return (
-    <div className="relative shadow-sm w-full max-w-md mx-auto">
-      <div className="absolute inset-y-0 left-0 flex items-center pl-4">
-        <svg
-          className="w-4 h-4 text-gray-400"
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
+    <div className="relative w-full max-w-md mx-auto">
+      <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+        <Search className="w-4 h-4 text-stone-400" aria-hidden="true" />
       </div>
       <input
         type="search"
-        className="block w-full py-2 pl-10 pr-4 text-sm text-gray-900 rounded-lg border border-gray-300 focus:outline-none"
-        placeholder="Search"
-        value={searchTerm}
-        onChange={handleSearch}
-        required
+        aria-label="Search stories"
+        className="block w-full py-2 pl-10 pr-9 text-sm text-stone-900 rounded-full border border-stone-200 bg-stone-50/50 placeholder-stone-400 transition-all focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent focus:bg-white [&::-webkit-search-cancel-button]:hidden"
+        placeholder="Search stories..."
+        value={value}
+        onChange={(e) => onSearch(e.target.value)}
       />
+      {value && (
+        <button
+          type="button"
+          onClick={() => onSearch("")}
+          aria-label="Clear search"
+          className="absolute inset-y-0 right-0 flex items-center pr-3 text-stone-400 hover:text-stone-700 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
     </div>
   );
 };
