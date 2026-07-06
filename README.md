@@ -1,38 +1,78 @@
-# Inscribe Blog Platform
+# Inscribe
 
-A modern, full-stack blogging platform that enables users to manage blog posts, with authentication and validation. Built using **React** for the frontend, **Cloudflare Workers** for the backend, **Prisma** ORM with **PostgreSQL** for data management, and **JWT** for secure authentication.
+A full-stack blogging platform where users can write, publish, and discover stories. Built with **React**, **Hono** on **Cloudflare Workers**, and **PostgreSQL** via **Prisma**.
 
 ## Features
 
-- **User Authentication**: Secure user login and registration.
-- **Blog Management**: View, create, and publish blog posts.
-- **Search Functionality**: Easily search for posts by title or content.
-- **Validation**: Zod for input validation, ensuring data integrity.
-- **Responsive Design**: Optimized for various screen sizes.
-- **Efficient Database Operations**: Prisma Accelerate for optimized data fetching.
+- **Authentication** — JWT-based signup/signin with hashed passwords
+- **Rich text editor** — write and preview posts with formatting, powered by Quill
+- **Tags** — tag posts and filter by topic
+- **Likes & comments** — engage with stories
+- **AI summaries** — one-click post summaries using Cloudflare Workers AI (Llama 3)
+- **Search & pagination** — find posts by title, content, or tag
+- **Responsive UI** — skeleton loaders, toasts, and a mobile-friendly layout
 
 ## Tech Stack
 
-- **Frontend**: React with TypeScript
-- **Backend**: Cloudflare Workers, Hono, JWT
-- **Database**: PostgreSQL (via Prisma)
-- **ORM**: Prisma with Accelerate extension
-- **Authentication**: JWT
+| Layer      | Technology                                          |
+| ---------- | --------------------------------------------------- |
+| Frontend   | React, TypeScript, Vite, Tailwind CSS               |
+| Backend    | Hono on Cloudflare Workers                          |
+| Database   | PostgreSQL with Prisma (Accelerate)                 |
+| Validation | Zod (shared via [`@shaikhaman/medium-common`](https://www.npmjs.com/package/@shaikhaman/medium-common)) |
+| AI         | Cloudflare Workers AI                               |
 
-## Environment Variables
+## Project Structure
 
-In order to run this project, the following environment variables are required:
+```
+├── frontend/   # React app (Vite)
+├── backend/    # Hono API on Cloudflare Workers
+└── common/     # Shared Zod schemas & types (published to npm)
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- A PostgreSQL database (with a [Prisma Accelerate](https://www.prisma.io/accelerate) connection string)
+- A Cloudflare account (for Workers & Workers AI)
 
 ### Backend
 
-- `JWT_SECRET`: Secret key for JWT authentication.
-- `DATABASE_URL`: Database URL for PostgreSQL instance.
-- `DATABASE_URL`: URL for Prisma Accelerate, defined in `wrangler.toml`.
+```bash
+cd backend
+npm install
+npx prisma migrate dev      # apply migrations
+npx prisma db seed          # optional: seed sample data
+npm run dev                 # start local dev server (wrangler)
+```
+
+Configure `backend/wrangler.toml`:
+
+- `DATABASE_URL` — Prisma Accelerate connection string
+- `JWT_SECRET` — secret key for signing JWTs
+- `[ai]` binding — enables Workers AI for post summaries
 
 ### Frontend
 
-- `DATABASE_URL`: Endpoint pointing to the backend API hosted on Cloudflare.
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Create `frontend/.env`:
+
+```
+VITE_BACKEND_URL=http://localhost:8787   # your backend URL
+```
+
+## Deployment
+
+- **Backend**: `cd backend && npm run deploy` (Cloudflare Workers)
+- **Frontend**: `cd frontend && npm run build`, then deploy `dist/` to any static host
 
 ## License
 
-This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
+This project is licensed under the [MIT License](LICENSE).
