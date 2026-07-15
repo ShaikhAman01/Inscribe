@@ -2,6 +2,8 @@
 
 A full-stack blogging platform where users can write, publish, and discover stories. Built with **React**, **Hono** on **Cloudflare Workers**, and **PostgreSQL** via **Prisma**.
 
+**[Live Demo](https://inscribe.shaikhaman.dev)**
+
 ## Features
 
 - **Authentication** — JWT-based signup/signin with hashed passwords
