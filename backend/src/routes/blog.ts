@@ -227,12 +227,16 @@ blogRouter.post("/summarize/:id", async (c) => {
       return c.json({ error: "AI configuration error" }, 500);
     }
 
-  const response = await c.env.AI.run("@cf/meta/llama-3-8b-instruct", {
-    messages: [
-      { role: "system", content: "Summarize this blog post in exactly 2 sentences." },
-      { role: "user", content: post.content },
-    ],
-  });
-
-  return c.json({ summary: response.response });
+  try {
+    const response = await c.env.AI.run("@cf/mistralai/mistral-small-3.1-24b-instruct", {
+      messages: [
+        { role: "system", content: "Summarize this blog post in exactly 2 sentences." },
+        { role: "user", content: post.content },
+      ],
+    });
+    return c.json({ summary: response.response });
+  } catch (e) {
+    console.error("Summarize failed:", e);
+    return c.json({ error: "Could not generate summary right now" }, 500);
+  }
 });

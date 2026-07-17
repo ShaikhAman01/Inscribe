@@ -3,9 +3,8 @@ main = "src/index.ts"
 compatibility_date = "2024-10-02"
 compatibility_flags = [ "nodejs_compat" ]
 
-[vars]
-DATABASE_URL="YOUR_DATABASE_URL"
-JWT_SECRET="YOUR_jWT_SECRET"
+# DATABASE_URL and JWT_SECRET are set as encrypted secrets (wrangler secret put),
+# not plaintext vars. Locally they come from .dev.vars (gitignored).
 
 [observability]
 enabled = true
