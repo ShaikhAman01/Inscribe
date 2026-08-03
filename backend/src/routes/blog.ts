@@ -64,11 +64,22 @@ blogRouter.put("/", async (c) => {
       message: "Inputs are incorrect",
     });
   }
+  const authorId = c.get("userId");
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate());
 
   try {
+    const existingPost = await prisma.post.findUnique({
+      where: { id: body.id },
+      select: { authorId: true },
+    });
+
+    if (!existingPost || existingPost.authorId !== authorId) {
+      c.status(403);
+      return c.json({ error: "You are not allowed to edit this post" });
+    }
+
     const post = await prisma.post.update({
       where: {
         id: body.id,
