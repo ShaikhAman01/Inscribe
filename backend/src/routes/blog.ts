@@ -241,7 +241,11 @@ blogRouter.post("/summarize/:id", async (c) => {
   try {
     const response = await c.env.AI.run("@cf/mistralai/mistral-small-3.1-24b-instruct", {
       messages: [
-        { role: "system", content: "Summarize this blog post in exactly 2 sentences." },
+        {
+          role: "system",
+          content:
+            "You are Inscribe's blog summarizer. Write exactly 2 sentences capturing the post's core point or main takeaway, aimed at a reader deciding whether to read further. Plain text only: no markdown, no quotation marks, no preamble like 'Here is a summary'. If the post is short or mostly code/lists, summarize its purpose rather than restating it verbatim.",
+        },
         { role: "user", content: post.content },
       ],
     });
