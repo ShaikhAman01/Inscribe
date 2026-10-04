@@ -3,6 +3,8 @@ import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { sign } from "hono/jwt";
 import { signinInput, signupInput } from "@shaikhaman/medium-common";
+import { burnPasswordCheck, hashPassword, verifyPassword } from "../lib/password";
+import { rateLimit } from "../lib/rateLimit";
 
 export const userRouter = new Hono<{
   Bindings: {
@@ -11,25 +13,20 @@ export const userRouter = new Hono<{
   };
 }>();
 
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return btoa(String.fromCharCode(...new Uint8Array(hash)));
-}
+// Prisma messages can echo query arguments (including password hashes), so only the code is logged.
+const errorCode = (e: unknown) => (e as { code?: string }).code ?? (e as Error).name;
 
-async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
-  const hashedInput = await hashPassword(password);
-  return hashedInput === hashedPassword;
-}
+const TOKEN_TTL_SECONDS = 7 * 24 * 60 * 60;
 
+const issueToken = (userId: string, secret: string) =>
+  sign({ id: userId, exp: Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS }, secret);
 
-userRouter.post("/signup", async (c) => {
+userRouter.post("/signup", rateLimit("signup", 5), async (c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate());
 
-  const body = await c.req.json();
+  const body = await c.req.json().catch(() => null);
 
   const { success } = signupInput.safeParse(body);
   if (!success) {
@@ -41,54 +38,41 @@ userRouter.post("/signup", async (c) => {
 
   try {
     const existingUser = await prisma.user.findUnique({
-      where:{
-        email:body.username
-      }
-    })
+      where: {
+        email: body.username,
+      },
+    });
 
-    if(existingUser){
+    if (existingUser) {
       c.status(400);
-        return c.json({error: "User already exists"})
+      return c.json({ error: "User already exists" });
     }
-
-    const hashedPassword = await hashPassword(body.password);
 
     const user = await prisma.user.create({
       data: {
         email: body.username,
-        password: hashedPassword,
+        password: await hashPassword(body.password),
         name: body.name,
       },
     });
-    console.log("Created user:", user);
-
-    const token = await sign(
-      {
-        id: user.id,
-      },
-      c.env.JWT_SECRET
-    );
-
-    console.log("Response being sent:", { jwt: token, name: user.name });
 
     return c.json({
-      jwt: token,
+      jwt: await issueToken(user.id, c.env.JWT_SECRET),
       name: user.name,
     });
   } catch (e) {
-    console.error("Error in signup",e)
+    console.error("Error in signup:", errorCode(e));
     c.status(403);
     return c.json({ error: "Failed to create user" });
   }
 });
 
-userRouter.post("/signin", async (c) => {
+userRouter.post("/signin", rateLimit("signin", 10), async (c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate());
 
-  const body = await c.req.json();
-  console.log("Signin request body:", body);
+  const body = await c.req.json().catch(() => null);
 
   const { success } = signinInput.safeParse(body);
   if (!success) {
@@ -104,37 +88,34 @@ userRouter.post("/signin", async (c) => {
         email: body.username,
       },
       select: {
-        id:true,
+        id: true,
         name: true,
-        password:true
+        password: true,
       },
     });
 
-    console.log("Found user:", user);
-
     if (!user) {
+      await burnPasswordCheck(body.password);
       c.status(401);
-      return c.json({ error: "User not found" });
+      return c.json({ error: "Invalid email or password" });
     }
 
-    //  password verification
-    const isPasswordValid = await verifyPassword(body.password, user.password);
-    if (!isPasswordValid) {
+    const { ok, needsRehash } = await verifyPassword(body.password, user.password);
+    if (!ok) {
       c.status(401);
-      return c.json({ error: "Invalid credentials" });
+      return c.json({ error: "Invalid email or password" });
     }
 
+    if (needsRehash) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { password: await hashPassword(body.password) },
+      });
+    }
 
-    const jwt = await sign(
-      {
-        id: user.id,
-      },
-      c.env.JWT_SECRET
-    );
-    console.log("Response being sent:", { jwt, name: user.name });
-    return c.json({ jwt, name: user.name });
+    return c.json({ jwt: await issueToken(user.id, c.env.JWT_SECRET), name: user.name });
   } catch (e) {
-    console.error("Error in signin:", e);
+    console.error("Error in signin:", errorCode(e));
     c.status(403);
     return c.json({ error: "Authentication failed" });
   }

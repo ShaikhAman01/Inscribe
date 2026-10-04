@@ -2,8 +2,8 @@ import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { createCommentInput } from "@shaikhaman/medium-common";
 import { Hono } from "hono";
-import { verify } from "hono/jwt";
 import { authMiddleware } from "../middlewares/auth";
+import { byUser, rateLimit } from "../lib/rateLimit";
 
 export const commentRouter = new Hono<{
   Bindings: {
@@ -17,9 +17,9 @@ export const commentRouter = new Hono<{
 
 commentRouter.use("/*", authMiddleware);
 
-commentRouter.post("/", async (c) => {
+commentRouter.post("/", rateLimit("comment", 10, byUser), async (c) => {
   const userId = c.get("userId");
-  const body = await c.req.json();
+  const body = await c.req.json().catch(() => null);
   const { success } = createCommentInput.safeParse(body);
   if (!success) {
     c.status(411);

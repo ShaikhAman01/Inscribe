@@ -28,7 +28,7 @@ export const useToast = () => {
 
   const showPromiseToast = (
     promise: () => Promise<unknown>,
-    messages: { loading: string; success: string; error: string }
+    messages: { loading: string; success: string; error: string | ((error: unknown) => string) }
   ) => {
     toast.promise(promise, {
       loading: messages.loading,
