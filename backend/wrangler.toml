@@ -9,6 +9,9 @@ compatibility_flags = [ "nodejs_compat" ]
 [observability]
 enabled = true
 
+[vars]
+ALLOWED_ORIGINS = "https://inscribe.shaikhaman.in,http://localhost:5173"
+
 
 # [[kv_namespaces]]
 # binding = "MY_KV_NAMESPACE"

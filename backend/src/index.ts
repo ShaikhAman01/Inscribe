@@ -9,10 +9,16 @@ const app = new Hono<{
   Bindings: {
     DATABASE_URL: string;
     JWT_SECRET: string;
+    ALLOWED_ORIGINS: string;
   };
 }>();
 
-app.use("/*", cors());
+app.use("/*", (c, next) =>
+  cors({
+    origin: (origin) => (c.env.ALLOWED_ORIGINS ?? "").split(",").includes(origin) ? origin : null,
+    allowHeaders: ["Content-Type", "Authorization"],
+  })(c, next)
+);
 
 app.route("/api/v1/user", userRouter);
 app.route("/api/v1/blog", blogRouter);

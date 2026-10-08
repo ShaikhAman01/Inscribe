@@ -54,7 +54,11 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
       {
         loading: "Authenticating...",
         success: `Successfully ${type === "signup" ? "signed up" : "signed in"}!`,
-        error: "Authentication failed. Check your credentials.",
+        error: (e) => {
+          if (!axios.isAxiosError(e)) return "Authentication failed. Please try again.";
+          if (e.response?.status === 429) return "Too many attempts. Please wait a minute and try again.";
+          return e.response?.data?.error ?? "Authentication failed. Check your credentials.";
+        },
       }
     );
   }

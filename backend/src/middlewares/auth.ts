@@ -27,20 +27,20 @@ export const authMiddleware = async (c: AuthContext, next: Next) => {
 
   const token = authHeader.split(" ")[1];
 
+  let payload: Record<string, unknown>;
   try {
-    const payload = await verify(token, c.env.JWT_SECRET, "HS256");
-
-    if (!payload || typeof payload !== "object" || !("id" in payload)) {
-      c.status(401);
-      return c.json({ error: "Invalid token payload", redirect: "/signup" });
-    }
-
-    c.set("userId", payload.id as string);
-    await next();
-  } catch (e) {
-    console.error("JWT Verification Error:", e);
-    
+    payload = await verify(token, c.env.JWT_SECRET, "HS256");
+  } catch {
     c.status(401);
     return c.json({ error: "Invalid or expired token", redirect: "/signup" });
   }
+
+  // Tokens issued before expiry was added never lapse, so they are no longer accepted.
+  if (typeof payload.id !== "string" || typeof payload.exp !== "number") {
+    c.status(401);
+    return c.json({ error: "Invalid or expired token", redirect: "/signup" });
+  }
+
+  c.set("userId", payload.id);
+  await next();
 };

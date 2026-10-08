@@ -49,7 +49,11 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
       setSummary(res.data.summary);
     } catch (e) {
       console.error("AI summarization failed", e);
-      toast.error("Couldn't generate a summary. Please try again.");
+      toast.error(
+        axios.isAxiosError(e) && e.response?.status === 429
+          ? "You've asked for a lot of summaries. Try again in a minute."
+          : "Couldn't generate a summary. Please try again.",
+      );
     } finally {
       setIsSummarizing(false);
     }

@@ -1,9 +1,9 @@
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
-import { createBlogInput, updateBlogInput } from "@shaikhaman/medium-common";
 import { Hono } from "hono";
-import { verify } from "hono/jwt";
 import { authMiddleware } from "../middlewares/auth";
+import { byUser, rateLimit } from "../lib/rateLimit";
+import { createPostSchema, updatePostSchema } from "../lib/validation";
 
 export const blogRouter = new Hono<{
   Bindings: {
@@ -18,10 +18,9 @@ export const blogRouter = new Hono<{
 
 blogRouter.use("*", authMiddleware);
 
-blogRouter.post("/", async (c) => {
-  const body = await c.req.json();
-  const { success } = createBlogInput.safeParse(body);
-  if (!success) {
+blogRouter.post("/", rateLimit("post", 10, byUser), async (c) => {
+  const parsed = createPostSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
     c.status(411);
     return c.json({
       message: "Inputs are incorrect",
@@ -35,11 +34,11 @@ blogRouter.post("/", async (c) => {
   try {
     const post = await prisma.post.create({
       data: {
-        title: body.title,
-        content: body.content,
+        title: parsed.data.title,
+        content: parsed.data.content,
         authorId: authorId,
         tags: {
-          connectOrCreate: (body.tags || []).map((tag: string) => ({
+          connectOrCreate: [...new Set(parsed.data.tags ?? [])].map((tag) => ({
             where: { name: tag },
             create: { name: tag },
           })),
@@ -55,9 +54,9 @@ blogRouter.post("/", async (c) => {
   }
 });
 
-blogRouter.put("/", async (c) => {
-  const body = await c.req.json();
-  const { success } = updateBlogInput.safeParse(body);
+blogRouter.put("/", rateLimit("post", 10, byUser), async (c) => {
+  const body = await c.req.json().catch(() => null);
+  const { success } = updatePostSchema.safeParse(body);
   if (!success) {
     c.status(411);
     return c.json({
@@ -205,7 +204,7 @@ blogRouter.get("/:id", async (c) => {
   }
 });
 
-blogRouter.post("/like/:id", async (c) => {
+blogRouter.post("/like/:id", rateLimit("like", 60, byUser), async (c) => {
   const postId = c.req.param("id");
   const userId = c.get("userId");
   const prisma = new PrismaClient({ datasourceUrl: c.env.DATABASE_URL }).$extends(withAccelerate());
@@ -226,17 +225,34 @@ blogRouter.post("/like/:id", async (c) => {
   }
 });
 
-blogRouter.post("/summarize/:id", async (c) => {
+const SUMMARY_INPUT_CHARS = 6000;
+const SUMMARY_CACHE_SECONDS = 7 * 24 * 60 * 60;
+
+const plainText = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
+const sha256Hex = async (text: string) => {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+};
+
+blogRouter.post("/summarize/:id", rateLimit("summarize", 5, byUser), async (c) => {
   const id = c.req.param("id");
   const prisma = new PrismaClient({ datasourceUrl: c.env.DATABASE_URL }).$extends(withAccelerate());
 
-  const post = await prisma.post.findUnique({ where: { id } });
+  const post = await prisma.post.findUnique({ where: { id }, select: { content: true } });
   if (!post) return c.json({ error: "Not found" }, 404);
 
   if (!c.env.AI) {
-      console.error("AI Binding missing in wrangler.toml");
-      return c.json({ error: "AI configuration error" }, 500);
-    }
+    console.error("AI Binding missing in wrangler.toml");
+    return c.json({ error: "AI configuration error" }, 500);
+  }
+
+  const text = plainText(post.content).slice(0, SUMMARY_INPUT_CHARS);
+  // Keyed by content hash so an edited post gets a fresh summary.
+  const cacheKey = new Request(`https://summary-cache.inscribe/${id}/${await sha256Hex(text)}`);
+  const cache = (caches as unknown as { default: Cache }).default;
+  const cached = await cache.match(cacheKey);
+  if (cached) return c.json({ summary: await cached.text() });
 
   try {
     const response = await c.env.AI.run("@cf/mistralai/mistral-small-3.1-24b-instruct", {
@@ -246,10 +262,14 @@ blogRouter.post("/summarize/:id", async (c) => {
           content:
             "You are Inscribe's blog summarizer. Write exactly 2 sentences capturing the post's core point or main takeaway, aimed at a reader deciding whether to read further. Plain text only: no markdown, no quotation marks, no preamble like 'Here is a summary'. If the post is short or mostly code/lists, summarize its purpose rather than restating it verbatim.",
         },
-        { role: "user", content: post.content },
+        { role: "user", content: text },
       ],
     });
-    return c.json({ summary: response.response });
+    const summary: string = response.response;
+    c.executionCtx.waitUntil(
+      cache.put(cacheKey, new Response(summary, { headers: { "Cache-Control": `max-age=${SUMMARY_CACHE_SECONDS}` } }))
+    );
+    return c.json({ summary });
   } catch (e) {
     console.error("Summarize failed:", e);
     return c.json({ error: "Could not generate summary right now" }, 500);
