@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /publish
+
+Sitemap: https://inscribe.shaikhaman.in/sitemap.xml

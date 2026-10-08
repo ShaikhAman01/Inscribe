@@ -1,3 +1,4 @@
+import { usePageTitle } from "../hooks/usePageTitle";
 import { useBlog } from "../hooks";
 import { Link, useParams } from "react-router-dom";
 import BlogPost from "../components/BlogPost";
@@ -10,6 +11,7 @@ const Blog = () => {
   const { loading, blog, notFound } = useBlog({
     id: id || "",
   });
+  usePageTitle(notFound ? "Story not found" : blog?.title);
 
   return (
     <div>

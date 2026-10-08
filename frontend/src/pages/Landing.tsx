@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Feather, ArrowRight, BookOpen, Heart } from "lucide-react";
 import { usePublicBlogs } from "../hooks";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 export default function Landing() {
   const isUnderConstruction = false;
   const { loading, blogs } = usePublicBlogs();
+  usePageTitle();
 
   return (
     <div className="min-h-screen bg-white">

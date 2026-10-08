@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Appbar from "../components/Appbar";
 import { ToastContainer, useToast } from "../components/Toast";
+import { usePageTitle } from "../hooks/usePageTitle";
 import { toast } from "sonner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -35,6 +36,7 @@ const Publish = () => {
   const [searchParams] = useSearchParams();
   const editId = searchParams.get("edit");
   const [loadingPost, setLoadingPost] = useState(Boolean(editId));
+  usePageTitle(editId ? "Edit story" : "Write a story");
 
   useEffect(() => {
     if (!token) {

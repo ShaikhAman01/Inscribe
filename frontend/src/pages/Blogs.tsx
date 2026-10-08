@@ -1,3 +1,4 @@
+import { usePageTitle } from "../hooks/usePageTitle";
 import BlogCard from "../components/BlogCard";
 import Appbar from "../components/Appbar";
 import { useBlogs } from "../hooks";
@@ -7,6 +8,7 @@ import { formattedDate } from "../utils/FormattedDate";
 import { SearchX, Loader2 } from "lucide-react";
 
 const Blogs = () => {
+  usePageTitle("Stories");
   const [searchTerm, setSearchTerm] = useState("");
   const [query, setQuery] = useState("");
   const { loading, loadingMore, error, blogs, hasMore, loadMore } = useBlogs(query);
