@@ -5,7 +5,8 @@ interface BlogCardProps {
   id: string;
   authorName: string;
   title: string;
-  content: string;
+  excerpt: string;
+  readMinutes: number;
   createdAt: string;
   tags?: { name: string }[];
 }
@@ -14,7 +15,8 @@ const BlogCard = ({
   id,
   authorName,
   title,
-  content,
+  excerpt,
+  readMinutes,
   createdAt,
   tags
 }: BlogCardProps) => {
@@ -38,7 +40,7 @@ const BlogCard = ({
           {title}
         </h2>
         <p className="font-medium text-stone-500 text-base pt-2 leading-relaxed line-clamp-3">
-          {content.length > 160 ? content.slice(0, 160) + "…" : content}
+          {excerpt}
         </p>
 
         {/* Tags Section */}
@@ -59,7 +61,7 @@ const BlogCard = ({
         {/* Footer: Read Time */}
         <div className="text-stone-400 text-xs font-bold pt-4 flex items-center uppercase tracking-widest">
           <Clock className="h-3.5 w-3.5 mr-2" aria-hidden="true" />
-          {`${Math.max(1, Math.ceil(content.length / 1000))} min read`}
+          {`${readMinutes} min read`}
         </div>
       </article>
     </Link>

@@ -2,56 +2,21 @@ import BlogCard from "../components/BlogCard";
 import Appbar from "../components/Appbar";
 import { useBlogs } from "../hooks";
 import BlogSkeleton from "../components/BlogSkeleton";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { formattedDate } from "../utils/FormattedDate";
-import { useNavigate } from "react-router-dom";
-import { SearchX, ChevronLeft, ChevronRight } from "lucide-react";
-
-const stripHtml = (html: string) => {
-  if (typeof html !== "string") return "";
-  return html.replace(/<[^>]*>/g, "");
-};
+import { SearchX, Loader2 } from "lucide-react";
 
 const Blogs = () => {
-  const { loading, blogs } = useBlogs();
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const blogsPerPage = 5;
-
-  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+  const { loading, loadingMore, error, blogs, hasMore, loadMore } = useBlogs(query);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/signup");
-    }
-  }, [navigate]);
+    const timer = setTimeout(() => setQuery(searchTerm.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
-  const filteredBlogs = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-    if (!term) return blogs;
-    return blogs.filter(
-      (blog) =>
-        blog.title.toLowerCase().includes(term) ||
-        blog.tags?.some((tag) => tag.name.toLowerCase().includes(term)) ||
-        stripHtml(blog.content).toLowerCase().includes(term)
-    );
-  }, [blogs, searchTerm]);
-
-  const indexOfLastBlog = currentPage * blogsPerPage;
-  const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
-  const currentBlogs = filteredBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
-  const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
-
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    setCurrentPage(1);
-  };
-
-  const goToPage = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const handleSearch = (term: string) => setSearchTerm(term);
 
   return (
     <div className="min-h-screen bg-stone-50/50 flex flex-col">
@@ -64,10 +29,10 @@ const Blogs = () => {
               Array.from({ length: 5 }).map((_, i) => <BlogSkeleton key={i} />)
             ) : (
               <>
-                {filteredBlogs.length > 0 ? (
+                {blogs.length > 0 ? (
                   <>
                     <div className="space-y-6">
-                      {currentBlogs.map((blog) => (
+                      {blogs.map((blog) => (
                         <div
                           key={blog.id}
                           className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden transition-all hover:border-stone-200 hover:shadow-md"
@@ -76,7 +41,8 @@ const Blogs = () => {
                             id={blog.id}
                             authorName={blog.author?.name || "Anonymous"}
                             title={blog.title}
-                            content={stripHtml(blog.content)}
+                            excerpt={blog.excerpt}
+                            readMinutes={blog.readMinutes}
                             createdAt={formattedDate(blog.createdAt)}
                             tags={blog.tags}
                           />
@@ -84,45 +50,17 @@ const Blogs = () => {
                       ))}
                     </div>
 
-                    {totalPages > 1 && (
-                      <nav
-                        aria-label="Pagination"
-                        className="flex items-center justify-center gap-2 py-10 flex-wrap"
-                      >
+                    {hasMore && (
+                      <div className="flex justify-center py-10">
                         <button
-                          onClick={() => goToPage(Math.max(1, currentPage - 1))}
-                          disabled={currentPage === 1}
-                          aria-label="Previous page"
-                          className="p-2 rounded-full hover:bg-stone-200 disabled:opacity-30 disabled:hover:bg-transparent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
+                          onClick={loadMore}
+                          disabled={loadingMore}
+                          className="flex items-center gap-2 px-8 py-3 bg-white text-stone-900 rounded-full font-bold border border-stone-200 hover:bg-stone-100 transition-all active:scale-95 disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
                         >
-                          <ChevronLeft className="w-5 h-5" aria-hidden="true" />
+                          {loadingMore && <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />}
+                          {loadingMore ? "Loading..." : "Load more stories"}
                         </button>
-
-                        {Array.from({ length: totalPages }).map((_, i) => (
-                          <button
-                            key={i}
-                            onClick={() => goToPage(i + 1)}
-                            aria-label={`Page ${i + 1}`}
-                            aria-current={currentPage === i + 1 ? "page" : undefined}
-                            className={`w-10 h-10 rounded-full font-bold text-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 ${
-                              currentPage === i + 1
-                                ? "bg-stone-900 text-white shadow-md scale-110"
-                                : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-100"
-                            }`}
-                          >
-                            {i + 1}
-                          </button>
-                        ))}
-
-                        <button
-                          onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
-                          disabled={currentPage === totalPages}
-                          aria-label="Next page"
-                          className="p-2 rounded-full hover:bg-stone-200 disabled:opacity-30 disabled:hover:bg-transparent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
-                        >
-                          <ChevronRight className="w-5 h-5" aria-hidden="true" />
-                        </button>
-                      </nav>
+                      </div>
                     )}
                   </>
                 ) : (
@@ -131,14 +69,16 @@ const Blogs = () => {
                       <SearchX className="w-12 h-12 text-stone-300" aria-hidden="true" />
                     </div>
                     <h3 className="text-2xl font-black text-stone-900 tracking-tight">
-                      No stories found
+                      {error ? "Couldn't load stories" : "No stories found"}
                     </h3>
                     <p className="text-stone-500 mt-2 max-w-xs">
-                      {searchTerm
-                        ? `We couldn't find any posts matching "${searchTerm}".`
+                      {error
+                        ? "Something went wrong on our side. Please refresh to try again."
+                        : query
+                        ? `We couldn't find any posts matching "${query}".`
                         : "There are no stories here yet. Be the first to write one!"}
                     </p>
-                    {searchTerm && (
+                    {query && !error && (
                       <button
                         onClick={() => handleSearch("")}
                         className="mt-8 px-8 py-3 bg-stone-900 text-white rounded-full font-bold hover:bg-stone-800 transition-all active:scale-95 shadow-lg shadow-stone-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2"

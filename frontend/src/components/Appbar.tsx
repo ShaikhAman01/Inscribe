@@ -3,8 +3,11 @@ import { Avatar } from "./BlogCard";
 import { ToastContainer, useToast } from "./Toast";
 import SearchBar from "./SearchBar";
 import Modal from "./Modal";
+import ConfirmDialog from "./ConfirmDialog";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Feather, LogOut, SquarePen } from "lucide-react";
+import { ChevronDown, Feather, LogOut, SquarePen, UserX } from "lucide-react";
+import axios from "axios";
+import { clearSession, deleteAccount, isSignedIn } from "../hooks";
 
 interface AppbarProps {
   searchTerm?: string;
@@ -29,6 +32,22 @@ const Appbar: React.FC<AppbarProps> = ({ searchTerm = "", onSearch }) => {
           </div>
         )}
 
+        {!isSignedIn() ? (
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              to="/signin"
+              className="px-4 py-2 rounded-full text-sm font-bold text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors"
+            >
+              Sign in
+            </Link>
+            <Link
+              to="/signup"
+              className="px-4 py-2 rounded-full text-sm font-bold text-white bg-stone-900 hover:bg-stone-800 transition-colors"
+            >
+              Get started
+            </Link>
+          </div>
+        ) : (
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           <Link
             to={"/publish"}
@@ -39,6 +58,7 @@ const Appbar: React.FC<AppbarProps> = ({ searchTerm = "", onSearch }) => {
           </Link>
           <ProfileDropdown />
         </div>
+        )}
       </div>
     </header>
   );
@@ -47,6 +67,10 @@ const Appbar: React.FC<AppbarProps> = ({ searchTerm = "", onSearch }) => {
 const ProfileDropdown: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isDeleteVisible, setIsDeleteVisible] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -80,9 +104,37 @@ const ProfileDropdown: React.FC = () => {
     setIsOpen(false);
   };
 
+  const closeDelete = () => {
+    setIsDeleteVisible(false);
+    setDeletePassword("");
+    setDeleteError("");
+  };
+
+  const confirmDelete = async () => {
+    setIsDeleting(true);
+    setDeleteError("");
+    try {
+      await deleteAccount(deletePassword);
+      clearSession();
+      showToast("Your account has been deleted", "success");
+      closeDelete();
+      navigate("/");
+    } catch (e) {
+      const status = axios.isAxiosError(e) ? e.response?.status : undefined;
+      setDeleteError(
+        status === 401
+          ? "That password is incorrect."
+          : status === 429
+          ? "Too many attempts. Please wait a minute."
+          : "Couldn't delete your account. Please try again."
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const confirmLogout = () => {
-    localStorage.removeItem("name");
-    localStorage.removeItem("token");
+    clearSession();
     showToast("Signed out successfully", "success");
     setIsModalVisible(false);
 
@@ -138,6 +190,17 @@ const ProfileDropdown: React.FC = () => {
               <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
               Logout
             </button>
+            <button
+              role="menuitem"
+              className="flex w-full items-center px-4 py-2 text-sm text-stone-500 border-t border-stone-100 hover:bg-stone-50 hover:text-red-600 transition-colors"
+              onClick={() => {
+                setIsOpen(false);
+                setIsDeleteVisible(true);
+              }}
+            >
+              <UserX className="mr-2 h-4 w-4" aria-hidden="true" />
+              Delete account
+            </button>
           </div>
         )}
       </div>
@@ -148,6 +211,37 @@ const ProfileDropdown: React.FC = () => {
         onClose={cancelLogout}
         onConfirm={confirmLogout}
       />
+
+      <ConfirmDialog
+        isVisible={isDeleteVisible}
+        title="Delete your account?"
+        description="This permanently removes your account along with every story, comment and like you've made. It can't be undone."
+        confirmLabel="Delete account"
+        busy={isDeleting}
+        confirmDisabled={!deletePassword}
+        onConfirm={confirmDelete}
+        onClose={closeDelete}
+      >
+        <label htmlFor="delete-password" className="block text-sm font-bold text-stone-700 mb-1.5">
+          Confirm with your password
+        </label>
+        <input
+          id="delete-password"
+          type="password"
+          autoComplete="current-password"
+          autoFocus
+          value={deletePassword}
+          onChange={(e) => setDeletePassword(e.target.value)}
+          aria-invalid={Boolean(deleteError)}
+          aria-describedby={deleteError ? "delete-password-error" : undefined}
+          className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-900"
+        />
+        {deleteError && (
+          <p id="delete-password-error" role="alert" className="mt-2 text-sm font-medium text-red-600">
+            {deleteError}
+          </p>
+        )}
+      </ConfirmDialog>
     </>
   );
 };

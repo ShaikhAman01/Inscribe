@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { Eye, Edit2, Send, Tag as TagIcon, Loader2 } from "lucide-react";
@@ -98,7 +99,7 @@ export const ContentPreview = ({ content }: { content: string }) => (
     <div className="p-8 prose prose-stone max-w-none">
       <div
         className="preview-content blog-content"
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
       />
     </div>
   </div>
@@ -120,9 +121,10 @@ interface EditorActionsProps {
   onPublish: () => void;
   isPreviewMode: boolean;
   isPublishing?: boolean;
+  isEditing?: boolean;
 }
 
-export const EditorActions = ({ onPreview, onPublish, isPreviewMode, isPublishing }: EditorActionsProps) => (
+export const EditorActions = ({ onPreview, onPublish, isPreviewMode, isPublishing, isEditing = false }: EditorActionsProps) => (
   <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-10 pt-6 border-t border-stone-100">
     <button
       onClick={onPreview}
@@ -145,11 +147,11 @@ export const EditorActions = ({ onPreview, onPublish, isPreviewMode, isPublishin
     >
       {isPublishing ? (
         <>
-          <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> Publishing...
+          <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> {isEditing ? "Saving..." : "Publishing..."}
         </>
       ) : (
         <>
-          <Send className="w-4 h-4" aria-hidden="true" /> Publish
+          <Send className="w-4 h-4" aria-hidden="true" /> {isEditing ? "Save changes" : "Publish"}
         </>
       )}
     </button>

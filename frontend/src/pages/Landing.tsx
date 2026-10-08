@@ -7,11 +7,6 @@ export default function Landing() {
   const isUnderConstruction = false;
   const { loading, blogs } = usePublicBlogs();
 
-  // Helper to strip HTML tags for the preview snippet
-  const stripHtml = (html: string) => {
-    return html.replace(/<[^>]*>/g, "");
-  };
-
   return (
     <div className="min-h-screen bg-white">
       {isUnderConstruction ? (
@@ -139,7 +134,7 @@ export default function Landing() {
                       </h3>
 
                       <p className="text-stone-500 line-clamp-3 mb-6 flex-grow leading-relaxed">
-                        {stripHtml(blog.content)}
+                        {blog.excerpt}
                       </p>
 
                       <div className="flex items-center text-stone-900 font-bold text-sm">

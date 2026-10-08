@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { Hono } from "hono";
+import { excerpt, readMinutes } from "../lib/text";
 
 export const publicBlogRouter = new Hono<{
   Bindings: {
@@ -35,7 +36,13 @@ publicBlogRouter.get("/", async (c) => {
         }
       });
 
-      return c.json({ post: posts });
+      return c.json({
+        posts: posts.map(({ content, ...post }) => ({
+          ...post,
+          excerpt: excerpt(content, 200),
+          readMinutes: readMinutes(content),
+        })),
+      });
     } catch (e) {
       console.error("Featured Blog Error:", e);
       return c.json({ error: "Internal Server Error" }, 500);

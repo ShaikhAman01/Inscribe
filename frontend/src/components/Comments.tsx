@@ -1,13 +1,29 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useComments } from "../hooks/useComments";
+import { isSignedIn } from "../hooks";
 import { Avatar } from "./BlogCard";
 import { ToastContainer } from "./Toast";
 import { toast } from "sonner";
-import { Loader2, MessageCircle } from "lucide-react";
+import { Loader2, MessageCircle, Trash2 } from "lucide-react";
 import { formattedDate } from "../utils/FormattedDate";
 
 const Comments = ({ postId }: { postId: string }) => {
-  const { loading, comments, addComment } = useComments(postId);
+  const { loading, comments, addComment, deleteComment } = useComments(postId);
+  const signedIn = isSignedIn();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (id: string) => {
+    setDeletingId(id);
+    try {
+      await deleteComment(id);
+      toast.success("Comment deleted");
+    } catch {
+      toast.error("Couldn't delete the comment. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -37,7 +53,14 @@ const Comments = ({ postId }: { postId: string }) => {
         Comments{!loading && comments.length > 0 ? ` (${comments.length})` : ""}
       </h2>
 
-      {/* Comment Form */}
+      {!signedIn ? (
+        <p className="mb-8 text-stone-600">
+          <Link to="/signin" className="font-bold text-stone-900 underline underline-offset-2">
+            Sign in
+          </Link>{" "}
+          to join the conversation.
+        </p>
+      ) : (
       <form onSubmit={handleSubmit} className="space-y-4 mb-8">
         <label htmlFor="comment-input" className="sr-only">
           Write a comment
@@ -67,6 +90,7 @@ const Comments = ({ postId }: { postId: string }) => {
           )}
         </div>
       </form>
+      )}
 
       {/* Comments List */}
       {loading ? (
@@ -92,11 +116,27 @@ const Comments = ({ postId }: { postId: string }) => {
           {comments.map((comment) => (
             <div key={comment.id} className="flex gap-3">
               <Avatar name={comment.author.name} />
-              <div className="min-w-0">
-                <div className="text-sm text-stone-500">
-                  <span className="font-bold text-stone-900">{comment.author.name}</span>
-                  {" · "}
-                  {formattedDate(comment.createdAt)}
+              <div className="min-w-0 flex-grow">
+                <div className="flex items-center justify-between gap-2 text-sm text-stone-500">
+                  <span>
+                    <span className="font-bold text-stone-900">{comment.author.name}</span>
+                    {" · "}
+                    {formattedDate(comment.createdAt)}
+                  </span>
+                  {comment.canDelete && (
+                    <button
+                      onClick={() => handleDelete(comment.id)}
+                      disabled={deletingId === comment.id}
+                      aria-label={`Delete comment by ${comment.author.name}`}
+                      className="p-1.5 rounded-full text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
+                    >
+                      {deletingId === comment.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" aria-hidden="true" />
+                      )}
+                    </button>
+                  )}
                 </div>
                 <p className="text-stone-700 leading-relaxed mt-1 break-words">
                   {comment.content}

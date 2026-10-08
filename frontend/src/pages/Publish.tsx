@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Appbar from "../components/Appbar";
 import { ToastContainer, useToast } from "../components/Toast";
 import { toast } from "sonner";
@@ -32,12 +32,36 @@ const Publish = () => {
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get("edit");
+  const [loadingPost, setLoadingPost] = useState(Boolean(editId));
 
   useEffect(() => {
     if (!token) {
-      navigate("/signup"); // Redirect to signup if not authenticated
+      navigate("/signin");
     }
   }, [navigate, token]);
+
+  useEffect(() => {
+    if (!editId || !token) return;
+    axios
+      .get(`${BACKEND_URL}/api/v1/blog/${editId}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(({ data }) => {
+        if (!data.post?.isMine) {
+          toast.error("You can only edit your own stories");
+          navigate(`/blog/${editId}`);
+          return;
+        }
+        setTitle(data.post.title);
+        setContent(data.post.content);
+        setTags(data.post.tags.map((t: { name: string }) => t.name).join(", "));
+      })
+      .catch(() => {
+        toast.error("Couldn't load that story");
+        navigate("/blogs");
+      })
+      .finally(() => setLoadingPost(false));
+  }, [editId, token, navigate]);
 
   const handlePublish = async () => {
     if (!title.trim() || !content.trim()) {
@@ -71,11 +95,10 @@ const Publish = () => {
     showPromiseToast(
       async () => {
         try {
-          const response = await axios.post(
-            `${BACKEND_URL}/api/v1/blog`,
-            { title, content, tags: tagsArray },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+          const headers = { Authorization: `Bearer ${token}` };
+          const response = editId
+            ? await axios.put(`${BACKEND_URL}/api/v1/blog`, { id: editId, title, content, tags: tagsArray }, { headers })
+            : await axios.post(`${BACKEND_URL}/api/v1/blog`, { title, content, tags: tagsArray }, { headers });
           setTimeout(() => navigate(`/blog/${response.data.id}`), 1000);
         } catch (error) {
           setIsPublishing(false);
@@ -83,8 +106,8 @@ const Publish = () => {
         }
       },
       {
-        loading: "Creating your post...",
-        success: "Post published successfully! 🎉",
+        loading: editId ? "Saving your changes..." : "Creating your post...",
+        success: editId ? "Changes saved" : "Post published successfully! 🎉",
         error: "Failed to publish post. Please try again.",
       }
     );
@@ -145,7 +168,8 @@ const Publish = () => {
             onPreview={() => setIsPreviewMode(!isPreviewMode)}
             onPublish={handlePublish}
             isPreviewMode={isPreviewMode}
-            isPublishing={isPublishing}
+            isPublishing={isPublishing || loadingPost}
+            isEditing={Boolean(editId)}
           />
         </div>
       </main>

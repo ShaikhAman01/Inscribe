@@ -1,41 +1,67 @@
 import { useState } from "react";
-import { Blog, toggleLike } from "../hooks";
+import { Link, useNavigate } from "react-router-dom";
+import { Blog, deletePost, isSignedIn, toggleLike } from "../hooks";
 import { formattedDate } from "../utils/FormattedDate";
 import { Avatar } from "./BlogCard";
 import DOMPurify from "dompurify";
 import Comments from "./Comments";
-import { Heart, Sparkles, Loader2, Clock } from "lucide-react";
+import ConfirmDialog from "./ConfirmDialog";
+import { Heart, Sparkles, Loader2, Clock, Pencil, Trash2 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const BlogPost = ({ blog }: { blog: Blog }) => {
-  const [likes, setLikes] = useState(blog._count?.likes || 0);
-  const [isLiked, setIsLiked] = useState(Array.isArray(blog.likes) ? blog.likes.length > 0 : false);
+  const navigate = useNavigate();
+  const signedIn = isSignedIn();
+  const [likes, setLikes] = useState(blog.likeCount);
+  const [isLiked, setIsLiked] = useState(blog.likedByMe);
   const [summary, setSummary] = useState("");
   const [isSummarizing, setIsSummarizing] = useState(false);
-
-  const readingTime = Math.max(
-    1,
-    Math.ceil(blog.content.replace(/<[^>]*>/g, "").length / 1000)
-  );
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleLike = async () => {
+    if (!signedIn) {
+      toast.info("Sign in to like stories");
+      navigate("/signin");
+      return;
+    }
     const currentlyLiked = isLiked;
     setIsLiked(!currentlyLiked);
-    setLikes(prev => currentlyLiked ? prev - 1 : prev + 1);
+    setLikes((prev) => (currentlyLiked ? prev - 1 : prev + 1));
 
     try {
-      await toggleLike(blog.id);
+      const result = await toggleLike(blog.id);
+      setIsLiked(result.liked);
+      setLikes(result.likeCount);
     } catch {
       setIsLiked(currentlyLiked);
-      setLikes(prev => currentlyLiked ? prev + 1 : prev - 1);
+      setLikes((prev) => (currentlyLiked ? prev + 1 : prev - 1));
       toast.error("Failed to sync like with server");
     }
   };
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deletePost(blog.id);
+      toast.success("Story deleted");
+      navigate("/blogs");
+    } catch {
+      toast.error("Couldn't delete this story. Please try again.");
+      setIsDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
+
   const generateSummary = async () => {
+    if (!signedIn) {
+      toast.info("Sign in to generate AI summaries");
+      navigate("/signin");
+      return;
+    }
     setIsSummarizing(true);
     try {
       const token = localStorage.getItem("token");
@@ -87,9 +113,29 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
                 <span aria-hidden="true" className="text-stone-300">·</span>
                 <span className="flex items-center gap-1.5 text-sm font-medium">
                   <Clock className="w-4 h-4" aria-hidden="true" />
-                  {readingTime} min read
+                  {blog.readMinutes} min read
                 </span>
+                <span aria-hidden="true" className="text-stone-300">·</span>
+                <span className="text-sm font-medium">by {blog.author.name || "Anonymous"}</span>
               </div>
+              {blog.isMine && (
+                <div className="pt-4 flex items-center gap-2">
+                  <Link
+                    to={`/publish?edit=${blog.id}`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-200 text-sm font-bold text-stone-600 hover:bg-stone-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
+                  >
+                    <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => setConfirmDelete(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-red-200 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                    Delete
+                  </button>
+                </div>
+              )}
             </div>
             <button
               onClick={handleLike}
@@ -133,7 +179,9 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
                 )}
                 {isSummarizing
                   ? "Architecting Summary..."
-                  : "Summarize with Inscribe AI"}
+                  : signedIn
+                  ? "Summarize with Inscribe AI"
+                  : "Sign in to summarize with Inscribe AI"}
               </button>
             ) : (
               <div className="animate-fade-in">
@@ -183,6 +231,15 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
       <div className="xl:px-40 lg:px-20 px-5 pb-20">
         <Comments postId={blog.id} />
       </div>
+      <ConfirmDialog
+        isVisible={confirmDelete}
+        title="Delete this story?"
+        description="The story, its comments and its likes will be removed permanently. This can't be undone."
+        confirmLabel="Delete story"
+        busy={isDeleting}
+        onConfirm={handleDelete}
+        onClose={() => setConfirmDelete(false)}
+      />
     </div>
   );
 };
