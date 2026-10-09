@@ -1,6 +1,7 @@
 import { usePageTitle } from "../hooks/usePageTitle";
 import BlogCard from "../components/BlogCard";
 import Appbar from "../components/Appbar";
+import SiteFooter from "../components/SiteFooter";
 import { useBlogs } from "../hooks";
 import BlogSkeleton from "../components/BlogSkeleton";
 import { useEffect, useState } from "react";
@@ -117,20 +118,7 @@ const Blogs = () => {
         </div>
       </main>
 
-      <footer className="mt-20 border-t border-stone-100 bg-white py-10 text-center text-stone-400 font-medium text-sm">
-        <p>&copy; {new Date().getFullYear()} Inscribe. All rights reserved.</p>
-        <p className="mt-1">
-          Crafted by{" "}
-          <a
-            href="https://github.com/shaikhaman01"
-            target="_blank"
-            rel="noreferrer"
-            className="text-stone-600 hover:underline"
-          >
-            Aman
-          </a>
-        </p>
-      </footer>
+      <SiteFooter />
     </div>
   );
 };

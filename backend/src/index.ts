@@ -10,12 +10,17 @@ const app = new Hono<{
     DATABASE_URL: string;
     JWT_SECRET: string;
     ALLOWED_ORIGINS: string;
+    PREVIEW_ORIGIN_PATTERN?: string;
   };
 }>();
 
+const isAllowedOrigin = (origin: string, allowed: string, previewPattern?: string) =>
+  allowed.split(",").includes(origin) || (Boolean(previewPattern) && new RegExp(previewPattern!).test(origin));
+
 app.use("/*", (c, next) =>
   cors({
-    origin: (origin) => (c.env.ALLOWED_ORIGINS ?? "").split(",").includes(origin) ? origin : null,
+    origin: (origin) =>
+      isAllowedOrigin(origin, c.env.ALLOWED_ORIGINS ?? "", c.env.PREVIEW_ORIGIN_PATTERN) ? origin : null,
     allowHeaders: ["Content-Type", "Authorization"],
   })(c, next)
 );

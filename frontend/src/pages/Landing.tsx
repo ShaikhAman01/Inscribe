@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Feather, ArrowRight, BookOpen, Heart } from "lucide-react";
+import { Feather, ArrowRight, BookOpen } from "lucide-react";
 import { usePublicBlogs } from "../hooks";
 import { usePageTitle } from "../hooks/usePageTitle";
+import SiteFooter from "../components/SiteFooter";
 
 export default function Landing() {
   const isUnderConstruction = false;
@@ -151,125 +152,7 @@ export default function Landing() {
           </main>
 
           {/* Footer */}
-          <footer className="mt-28 border-t border-stone-200/60 bg-stone-50/50 pt-16 pb-12 text-stone-600">
-            <div className="container mx-auto px-4">
-              
-              {/* Main Grid Section */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12">
-                
-                {/* Brand Column */}
-                <div className="md:col-span-5 flex flex-col items-start space-y-4">
-                  <div className="flex items-center text-2xl font-black text-stone-900 tracking-tight">
-                    <Feather className="h-6 w-6 mr-2.5 text-stone-900" />
-                    Inscribe
-                  </div>
-
-                  <p className="text-sm text-stone-500 max-w-sm leading-relaxed">
-                    The modern standard for online publishing. Empowering
-                    developers, writers, and creators to share insights globally.
-                  </p>
-                </div>
-
-                {/* Spacer */}
-                <div className="hidden md:block md:col-span-1"></div>
-
-                {/* Product Links */}
-                <div className="md:col-span-3">
-                  <h3 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4">
-                    Product
-                  </h3>
-
-                  <ul className="space-y-2.5 text-sm font-medium">
-                    <li>
-                      <a
-                        href="#"
-                        className="hover:text-stone-900 transition-colors"
-                      >
-                        Features
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="hover:text-stone-900 transition-colors"
-                      >
-                        AI Insights
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="hover:text-stone-900 transition-colors"
-                      >
-                        Analytics
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Community Links */}
-                <div className="md:col-span-3">
-                  <h3 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4">
-                    Community
-                  </h3>
-
-                  <ul className="space-y-2.5 text-sm font-medium">
-                    <li>
-                      <a
-                        href="#"
-                        className="hover:text-stone-900 transition-colors"
-                      >
-                        Write
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="hover:text-stone-900 transition-colors"
-                      >
-                        Explore
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="https://github.com/ShaikhAman01/Inscribe"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="hover:text-stone-900 transition-colors"
-                      >
-                        OSS Contribute
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              {/* Bottom Strip */}
-              <div className="border-t border-stone-200/50 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-xs font-medium text-stone-400">
-                  &copy; {new Date().getFullYear()} Inscribe. All rights reserved.
-                </div>
-
-                <div className="text-xs font-semibold text-stone-400 flex items-center gap-1 bg-stone-100 px-3 py-1.5 rounded-full border border-stone-200/40">
-                  Made with{" "}
-                  <Heart className="h-3 w-3 text-red-500 fill-red-500 animate-pulse" />{" "}
-                  by{" "}
-                  <a
-                    href="https://x.com/shaikhaman01"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-stone-600 hover:text-indigo-600 transition-colors underline decoration-stone-300 hover:decoration-indigo-500"
-                  >
-                    Aman
-                  </a>
-                </div>
-              </div>
-            </div>
-          </footer>
+          <SiteFooter />
         </div>
       )}
     </div>

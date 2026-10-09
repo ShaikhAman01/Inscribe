@@ -146,6 +146,13 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
               {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />}
               {type === "signup" ? "Create account" : "Sign in"}
             </button>
+            {type === "signup" && (
+              <p className="mt-4 text-center text-sm text-stone-600">
+                By creating an account you agree to the{" "}
+                <Link to="/terms" className="font-semibold text-stone-900 underline underline-offset-2">Terms</Link> and{" "}
+                <Link to="/privacy" className="font-semibold text-stone-900 underline underline-offset-2">Privacy Policy</Link>.
+              </p>
+            )}
           </form>
         </div>
       </div>

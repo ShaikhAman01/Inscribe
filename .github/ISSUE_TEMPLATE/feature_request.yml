@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest an idea or improvement for Inscribe.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to do?
+      description: Describe the problem or the moment where you wished Inscribe did something more.
+      placeholder: I'd like to save a draft and finish my story later.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: How do you imagine it working?
+      placeholder: A "Save draft" button next to Publish, and a Drafts list in my profile menu.
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Examples from other apps, sketches, or screenshots are welcome.

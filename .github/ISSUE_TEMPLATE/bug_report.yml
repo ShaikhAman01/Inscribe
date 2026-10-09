@@ -1,0 +1,58 @@
+name: Bug report
+description: Something in Inscribe is broken or behaving unexpectedly.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this.
+
+        **Please don't paste your password, sign-in token, or anyone's private details.**
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+      placeholder: I clicked "Load more stories" and the same stories appeared twice.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to /blogs
+        2. Search for "..."
+        3. Click "..."
+    validations:
+      required: true
+
+  - type: input
+    id: page
+    attributes:
+      label: Page URL
+      placeholder: https://inscribe.shaikhaman.in/blog/...
+
+  - type: dropdown
+    id: signed-in
+    attributes:
+      label: Were you signed in?
+      options:
+        - "Yes"
+        - "No"
+        - Not sure
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      placeholder: Firefox 131 on Windows 11, Safari on iPhone 15
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots or console errors help a lot.

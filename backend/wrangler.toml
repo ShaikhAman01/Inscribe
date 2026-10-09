@@ -11,6 +11,8 @@ enabled = true
 
 [vars]
 ALLOWED_ORIGINS = "https://inscribe.shaikhaman.in,http://localhost:5173"
+# Vercel preview deployments of this project only: inscribe-<9-char id>-<team>.vercel.app
+PREVIEW_ORIGIN_PATTERN = "^https://inscribe-[a-z0-9]{9}-shaikhaman01s-projects\\.vercel\\.app$"
 
 
 # [[kv_namespaces]]
