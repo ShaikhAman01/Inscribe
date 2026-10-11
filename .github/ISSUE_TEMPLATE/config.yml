@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security issue
+    url: https://github.com/ShaikhAman01/Inscribe/security/advisories/new
+    about: Report a vulnerability privately rather than in a public issue.
+  - name: Email
+    url: mailto:shaikhaman.0020@gmail.com
+    about: For anything that shouldn't be public, like account or data requests.

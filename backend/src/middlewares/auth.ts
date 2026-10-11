@@ -44,3 +44,17 @@ export const authMiddleware = async (c: AuthContext, next: Next) => {
   c.set("userId", payload.id);
   await next();
 };
+
+// For public routes: identifies a signed-in reader when a valid token is sent, never rejects.
+export const optionalAuth = async (c: AuthContext, next: Next) => {
+  const authHeader = c.req.header("Authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    try {
+      const payload = await verify(authHeader.slice(7), c.env.JWT_SECRET, "HS256");
+      if (typeof payload.id === "string" && typeof payload.exp === "number") c.set("userId", payload.id);
+    } catch {
+      // Expired or invalid: read as a guest.
+    }
+  }
+  await next();
+};

@@ -12,7 +12,7 @@ const Quote = () => {
             <div className="text-xl font-bold text-stone-900">
               Hans Hofmann
             </div>
-            <div className="text-sm font-black uppercase tracking-widest text-stone-500 mt-1">
+            <div className="text-sm font-black uppercase tracking-widest text-stone-600 mt-1">
               Artist & Educator
             </div>
           </div>

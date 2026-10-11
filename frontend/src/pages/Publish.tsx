@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Appbar from "../components/Appbar";
 import { ToastContainer, useToast } from "../components/Toast";
+import { usePageTitle } from "../hooks/usePageTitle";
 import { toast } from "sonner";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -32,12 +33,37 @@ const Publish = () => {
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get("edit");
+  const [loadingPost, setLoadingPost] = useState(Boolean(editId));
+  usePageTitle(editId ? "Edit story" : "Write a story");
 
   useEffect(() => {
     if (!token) {
-      navigate("/signup"); // Redirect to signup if not authenticated
+      navigate("/signin");
     }
   }, [navigate, token]);
+
+  useEffect(() => {
+    if (!editId || !token) return;
+    axios
+      .get(`${BACKEND_URL}/api/v1/blog/${editId}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(({ data }) => {
+        if (!data.post?.isMine) {
+          toast.error("You can only edit your own stories");
+          navigate(`/blog/${editId}`);
+          return;
+        }
+        setTitle(data.post.title);
+        setContent(data.post.content);
+        setTags(data.post.tags.map((t: { name: string }) => t.name).join(", "));
+      })
+      .catch(() => {
+        toast.error("Couldn't load that story");
+        navigate("/blogs");
+      })
+      .finally(() => setLoadingPost(false));
+  }, [editId, token, navigate]);
 
   const handlePublish = async () => {
     if (!title.trim() || !content.trim()) {
@@ -71,11 +97,10 @@ const Publish = () => {
     showPromiseToast(
       async () => {
         try {
-          const response = await axios.post(
-            `${BACKEND_URL}/api/v1/blog`,
-            { title, content, tags: tagsArray },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+          const headers = { Authorization: `Bearer ${token}` };
+          const response = editId
+            ? await axios.put(`${BACKEND_URL}/api/v1/blog`, { id: editId, title, content, tags: tagsArray }, { headers })
+            : await axios.post(`${BACKEND_URL}/api/v1/blog`, { title, content, tags: tagsArray }, { headers });
           setTimeout(() => navigate(`/blog/${response.data.id}`), 1000);
         } catch (error) {
           setIsPublishing(false);
@@ -83,8 +108,8 @@ const Publish = () => {
         }
       },
       {
-        loading: "Creating your post...",
-        success: "Post published successfully! 🎉",
+        loading: editId ? "Saving your changes..." : "Creating your post...",
+        success: editId ? "Changes saved" : "Post published successfully! 🎉",
         error: "Failed to publish post. Please try again.",
       }
     );
@@ -123,7 +148,8 @@ const Publish = () => {
     <div className="min-h-screen bg-stone-50">
       <style>{containerStyle}</style>
       <Appbar />
-      <main className="max-w-5xl mx-auto p-6 space-y-6">
+      <main id="main" tabIndex={-1} className="max-w-5xl mx-auto p-6 space-y-6 focus:outline-none">
+        <h1 className="sr-only">{editId ? "Edit story" : "Write a story"}</h1>
         <div className="bg-white rounded-lg shadow-sm p-6 max-w-5xl">
           <TitleInput
             title={title}
@@ -145,7 +171,8 @@ const Publish = () => {
             onPreview={() => setIsPreviewMode(!isPreviewMode)}
             onPublish={handlePublish}
             isPreviewMode={isPreviewMode}
-            isPublishing={isPublishing}
+            isPublishing={isPublishing || loadingPost}
+            isEditing={Boolean(editId)}
           />
         </div>
       </main>

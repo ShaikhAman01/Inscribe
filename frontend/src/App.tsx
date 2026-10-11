@@ -8,6 +8,9 @@ const Signin = lazy(() => import("./pages/Signin"));
 const Blog = lazy(() => import("./pages/Blog"));
 const Blogs = lazy(() => import("./pages/Blogs"));
 const Publish = lazy(() => import("./pages/Publish"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Terms = lazy(() => import("./pages/Terms"));
 
 function App() {
   return (
@@ -16,7 +19,7 @@ function App() {
         <Suspense
           fallback={
             <div className="min-h-screen flex items-center justify-center bg-stone-50">
-              <Loader2 className="w-8 h-8 animate-spin text-stone-400" aria-label="Loading page" />
+              <Loader2 className="w-8 h-8 animate-spin text-stone-500" aria-label="Loading page" />
             </div>
           }
         >
@@ -27,6 +30,9 @@ function App() {
             <Route path="/blog/:id" element={<Blog />} />
             <Route path="/blogs" element={<Blogs />} />
             <Route path="/publish" element={<Publish />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

@@ -64,7 +64,7 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
   }
 
   return (
-    <div className="min-h-screen flex justify-center flex-col bg-stone-50 py-12">
+    <main className="min-h-screen flex justify-center flex-col bg-stone-50 py-12">
       <div className="flex justify-center">
         <div className="w-full max-w-md px-6 sm:px-8">
           <div className="mb-10 text-center">
@@ -126,14 +126,14 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                className="absolute right-3 top-[38px] text-stone-400 hover:text-stone-600 transition-colors rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
+                className="absolute right-3 top-[38px] text-stone-500 hover:text-stone-900 transition-colors rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" aria-hidden="true" /> : <Eye className="w-5 h-5" aria-hidden="true" />}
               </button>
             </div>
 
             {passwordError && (
-              <p role="alert" className="text-red-500 text-xs font-bold uppercase tracking-wider">
+              <p role="alert" className="text-red-600 text-xs font-bold uppercase tracking-wider">
                 {passwordError}
               </p>
             )}
@@ -146,11 +146,18 @@ const Auth = ({ type }: { type: "signup" | "signin" }) => {
               {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />}
               {type === "signup" ? "Create account" : "Sign in"}
             </button>
+            {type === "signup" && (
+              <p className="mt-4 text-center text-sm text-stone-600">
+                By creating an account you agree to the{" "}
+                <Link to="/terms" className="font-semibold text-stone-900 underline underline-offset-2">Terms</Link> and{" "}
+                <Link to="/privacy" className="font-semibold text-stone-900 underline underline-offset-2">Privacy Policy</Link>.
+              </p>
+            )}
           </form>
         </div>
       </div>
       <ToastContainer />
-    </div>
+    </main>
   );
 };
 
@@ -172,7 +179,7 @@ function LabelledInput({ id, label, placeholder, onChange, type, icon, autoCompl
       </label>
       <div className="relative flex items-center">
         {icon && (
-          <div className="absolute left-3 text-stone-400" aria-hidden="true">
+          <div className="absolute left-3 text-stone-500" aria-hidden="true">
             {icon}
           </div>
         )}
@@ -181,7 +188,7 @@ function LabelledInput({ id, label, placeholder, onChange, type, icon, autoCompl
           onChange={onChange}
           type={type || "text"}
           autoComplete={autoComplete}
-          className={`bg-white border border-stone-200 text-stone-900 text-sm rounded-xl focus:ring-2 focus:ring-stone-900 focus:border-transparent block w-full ${icon ? 'pl-10' : 'pl-4'} p-3 transition-all placeholder-stone-300`}
+          className={`bg-white border border-stone-200 text-stone-900 text-sm rounded-xl focus:ring-2 focus:ring-stone-900 focus:border-transparent block w-full ${icon ? 'pl-10' : 'pl-4'} p-3 transition-all placeholder-stone-400`}
           placeholder={placeholder}
           required
         />

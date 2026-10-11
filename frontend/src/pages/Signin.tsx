@@ -1,7 +1,9 @@
+import { usePageTitle } from "../hooks/usePageTitle";
 import Auth from "../components/Auth";
 import Quote from "../components/Quote";
 
 const Signin = () => {
+  usePageTitle("Sign in");
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2">
       <div>

@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { Eye, Edit2, Send, Tag as TagIcon, Loader2 } from "lucide-react";
@@ -43,14 +44,20 @@ interface TitleInputProps {
 }
 
 export const TitleInput = ({ title, setTitle, maxLength }: TitleInputProps) => (
-  <input
-    type="text"
-    placeholder="Title"
-    value={title}
-    onChange={(e) => setTitle(e.target.value)}
-    maxLength={maxLength}
-    className="w-full text-5xl p-6 font-black border-none focus:outline-none placeholder-stone-200 text-stone-900 bg-transparent"
-  />
+  <div className="px-6">
+    <label htmlFor="story-title" className="sr-only">
+      Story title
+    </label>
+    <input
+      id="story-title"
+      type="text"
+      placeholder="Title"
+      value={title}
+      onChange={(e) => setTitle(e.target.value)}
+      maxLength={maxLength}
+      className="w-full text-5xl px-0 py-6 font-black border-0 border-b-2 border-transparent focus:border-stone-500 focus:outline-none focus:ring-0 placeholder-stone-400 text-stone-900 bg-transparent transition-colors"
+    />
+  </div>
 );
 
 interface TagInputProps {
@@ -60,16 +67,17 @@ interface TagInputProps {
 
 export const TagInput = ({ tags, setTags }: TagInputProps) => (
   <div className="px-6 pb-4">
-    <div className="flex items-center gap-2 text-stone-400 mb-2">
-      <TagIcon className="w-4 h-4" />
+    <label htmlFor="story-tags" className="flex items-center gap-2 text-stone-500 mb-2">
+      <TagIcon className="w-4 h-4" aria-hidden="true" />
       <span className="text-xs font-black uppercase tracking-widest">Tags (comma separated)</span>
-    </div>
+    </label>
     <input
+      id="story-tags"
       type="text"
       placeholder="technology, philosophy, life..."
       value={tags}
       onChange={(e) => setTags(e.target.value)}
-      className="w-full bg-stone-50 border border-stone-100 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-stone-200 transition-all text-stone-700 placeholder-stone-300"
+      className="w-full bg-stone-50 border border-stone-100 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-all text-stone-700 placeholder-stone-400"
     />
   </div>
 );
@@ -98,7 +106,7 @@ export const ContentPreview = ({ content }: { content: string }) => (
     <div className="p-8 prose prose-stone max-w-none">
       <div
         className="preview-content blog-content"
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
       />
     </div>
   </div>
@@ -109,7 +117,7 @@ export const WordCount = ({ content, maxLength }: { content: string; maxLength: 
   const isOver = charCount > maxLength;
 
   return (
-    <div className={`text-xs mt-4 px-2 font-bold tracking-widest uppercase ${isOver ? "text-red-500" : "text-stone-400"}`}>
+    <div className={`text-xs mt-4 px-2 font-bold tracking-widest uppercase ${isOver ? "text-red-600" : "text-stone-500"}`}>
       {charCount.toLocaleString()} / {maxLength.toLocaleString()} characters
     </div>
   );
@@ -120,9 +128,10 @@ interface EditorActionsProps {
   onPublish: () => void;
   isPreviewMode: boolean;
   isPublishing?: boolean;
+  isEditing?: boolean;
 }
 
-export const EditorActions = ({ onPreview, onPublish, isPreviewMode, isPublishing }: EditorActionsProps) => (
+export const EditorActions = ({ onPreview, onPublish, isPreviewMode, isPublishing, isEditing = false }: EditorActionsProps) => (
   <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-10 pt-6 border-t border-stone-100">
     <button
       onClick={onPreview}
@@ -145,11 +154,11 @@ export const EditorActions = ({ onPreview, onPublish, isPreviewMode, isPublishin
     >
       {isPublishing ? (
         <>
-          <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> Publishing...
+          <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> {isEditing ? "Saving..." : "Publishing..."}
         </>
       ) : (
         <>
-          <Send className="w-4 h-4" aria-hidden="true" /> Publish
+          <Send className="w-4 h-4" aria-hidden="true" /> {isEditing ? "Save changes" : "Publish"}
         </>
       )}
     </button>

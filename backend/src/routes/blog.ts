@@ -1,9 +1,11 @@
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { Hono } from "hono";
-import { authMiddleware } from "../middlewares/auth";
+import { z } from "zod";
+import { authMiddleware, optionalAuth } from "../middlewares/auth";
 import { byUser, rateLimit } from "../lib/rateLimit";
 import { createPostSchema, updatePostSchema } from "../lib/validation";
+import { excerpt, plainText, readMinutes } from "../lib/text";
 
 export const blogRouter = new Hono<{
   Bindings: {
@@ -16,211 +18,206 @@ export const blogRouter = new Hono<{
   };
 }>();
 
-blogRouter.use("*", authMiddleware);
+const PAGE_SIZE = 20;
+const uuid = z.string().uuid();
 
-blogRouter.post("/", rateLimit("post", 10, byUser), async (c) => {
-  const parsed = createPostSchema.safeParse(await c.req.json().catch(() => null));
-  if (!parsed.success) {
-    c.status(411);
-    return c.json({
-      message: "Inputs are incorrect",
-    });
+const db = (url: string) => new PrismaClient({ datasourceUrl: url }).$extends(withAccelerate());
+
+const uniqueTags = (tags?: string[]) =>
+  [...new Set(tags ?? [])].map((name) => ({ where: { name }, create: { name } }));
+
+blogRouter.get("/bulk", optionalAuth, async (c) => {
+  const cursor = c.req.query("cursor");
+  if (cursor && !uuid.safeParse(cursor).success) {
+    return c.json({ error: "Invalid cursor" }, 400);
   }
-  const authorId = c.get("userId");
-  const prisma = new PrismaClient({
-    datasourceUrl: c.env.DATABASE_URL,
-  }).$extends(withAccelerate());
+  const q = (c.req.query("q") ?? "").trim().slice(0, 100);
+  const userId = c.get("userId");
 
   try {
-    const post = await prisma.post.create({
+    const rows = await db(c.env.DATABASE_URL).post.findMany({
+      where: {
+        published: true,
+        ...(q && {
+          OR: [
+            { title: { contains: q, mode: "insensitive" } },
+            { content: { contains: q, mode: "insensitive" } },
+            { tags: { some: { name: { contains: q, mode: "insensitive" } } } },
+          ],
+        }),
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: PAGE_SIZE + 1,
+      ...(cursor && { cursor: { id: cursor }, skip: 1 }),
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        createdAt: true,
+        author: { select: { name: true } },
+        tags: { select: { name: true } },
+        _count: { select: { likes: true } },
+        likes: { where: { userId: userId ?? "" }, select: { id: true } },
+      },
+    });
+
+    const page = rows.slice(0, PAGE_SIZE);
+    return c.json({
+      posts: page.map((p) => ({
+        id: p.id,
+        title: p.title,
+        excerpt: excerpt(p.content),
+        readMinutes: readMinutes(p.content),
+        createdAt: p.createdAt,
+        author: p.author,
+        tags: p.tags,
+        likeCount: p._count.likes,
+        likedByMe: p.likes.length > 0,
+      })),
+      nextCursor: rows.length > PAGE_SIZE ? page[page.length - 1].id : null,
+    });
+  } catch (e) {
+    console.error("Error fetching posts", e);
+    return c.json({ error: "Failed to fetch posts" }, 500);
+  }
+});
+
+blogRouter.get("/:id", optionalAuth, async (c) => {
+  const id = c.req.param("id");
+  if (!uuid.safeParse(id).success) return c.json({ error: "Post not found" }, 404);
+  const userId = c.get("userId");
+
+  try {
+    const post = await db(c.env.DATABASE_URL).post.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        createdAt: true,
+        authorId: true,
+        author: { select: { name: true } },
+        tags: { select: { name: true } },
+        _count: { select: { likes: true } },
+        likes: { where: { userId: userId ?? "" }, select: { id: true } },
+      },
+    });
+    if (!post) return c.json({ error: "Post not found" }, 404);
+
+    return c.json({
+      post: {
+        id: post.id,
+        title: post.title,
+        content: post.content,
+        createdAt: post.createdAt,
+        author: post.author,
+        tags: post.tags,
+        readMinutes: readMinutes(post.content),
+        likeCount: post._count.likes,
+        likedByMe: post.likes.length > 0,
+        isMine: Boolean(userId) && post.authorId === userId,
+      },
+    });
+  } catch (e) {
+    console.error("Error fetching post", e);
+    return c.json({ error: "Failed to fetch post" }, 500);
+  }
+});
+
+blogRouter.post("/", authMiddleware, rateLimit("post", 10, byUser), async (c) => {
+  const parsed = createPostSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "Inputs are incorrect" }, 400);
+
+  try {
+    const post = await db(c.env.DATABASE_URL).post.create({
       data: {
         title: parsed.data.title,
         content: parsed.data.content,
-        authorId: authorId,
-        tags: {
-          connectOrCreate: [...new Set(parsed.data.tags ?? [])].map((tag) => ({
-            where: { name: tag },
-            create: { name: tag },
-          })),
-        },
+        published: true,
+        authorId: c.get("userId"),
+        tags: { connectOrCreate: uniqueTags(parsed.data.tags) },
       },
     });
-    c.status(200);
-    return c.json({ id: post.id });
+    return c.json({ id: post.id }, 201);
   } catch (e) {
     console.error("Error creating post", e);
-    c.status(500);
-    return c.json({ error: "Failed to create post" });
+    return c.json({ error: "Failed to create post" }, 500);
   }
 });
 
-blogRouter.put("/", rateLimit("post", 10, byUser), async (c) => {
-  const body = await c.req.json().catch(() => null);
-  const { success } = updatePostSchema.safeParse(body);
-  if (!success) {
-    c.status(411);
-    return c.json({
-      message: "Inputs are incorrect",
-    });
-  }
-  const authorId = c.get("userId");
-  const prisma = new PrismaClient({
-    datasourceUrl: c.env.DATABASE_URL,
-  }).$extends(withAccelerate());
+blogRouter.put("/", authMiddleware, rateLimit("post", 10, byUser), async (c) => {
+  const parsed = updatePostSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "Inputs are incorrect" }, 400);
+  const prisma = db(c.env.DATABASE_URL);
 
   try {
-    const existingPost = await prisma.post.findUnique({
-      where: { id: body.id },
+    const existing = await prisma.post.findUnique({
+      where: { id: parsed.data.id },
       select: { authorId: true },
     });
-
-    if (!existingPost || existingPost.authorId !== authorId) {
-      c.status(403);
-      return c.json({ error: "You are not allowed to edit this post" });
+    if (!existing) return c.json({ error: "Post not found" }, 404);
+    if (existing.authorId !== c.get("userId")) {
+      return c.json({ error: "You are not allowed to edit this post" }, 403);
     }
 
     const post = await prisma.post.update({
-      where: {
-        id: body.id,
-      },
+      where: { id: parsed.data.id },
       data: {
-        title: body.title,
-        content: body.content,
+        title: parsed.data.title,
+        content: parsed.data.content,
+        ...(parsed.data.tags && {
+          tags: { set: [], connectOrCreate: uniqueTags(parsed.data.tags) },
+        }),
       },
     });
-    c.status(201);
     return c.json({ id: post.id });
   } catch (e) {
     console.error("Error updating post", e);
-    c.status(500);
-    return c.json({ error: "Failed to update post" });
+    return c.json({ error: "Failed to update post" }, 500);
   }
 });
 
-blogRouter.get("/bulk", async (c) => {
-  const prisma = new PrismaClient({
-    datasourceUrl: c.env.DATABASE_URL,
-  }).$extends(withAccelerate());
-
-  const searchQuery = c.req.query("q"); // Extract the search query from the request
-
-  try {
-    const post = await prisma.post.findMany({
-      where: searchQuery
-        ? {
-            OR: [
-              {
-                title: {
-                  contains: searchQuery,
-                  mode: "insensitive", // Case-insensitive search
-                },
-              },
-              {
-                content: {
-                  contains: searchQuery,
-                  mode: "insensitive", // Case-insensitive search
-                },
-              },
-            ],
-          }
-        : {}, // If no search query, return all posts
-      select: {
-        content: true,
-        title: true,
-        id: true,
-        createdAt: true,
-        author: {
-          select: {
-            name: true,
-          },
-        },
-        tags: {
-      select: {
-        name: true
-      }
-    },
-        _count: {
-      select: { likes: true }
-    },
-    likes: {
-      where: {
-        userId: c.get("userId")
-      }
-    }
-      },
-    });
-
-    c.status(201);
-    return c.json({ post });
-  } catch (e) {
-    console.error("Error fetching posts", e);
-    c.status(500);
-    return c.json({ error: "Failed to fetch posts" });
-  }
-});
-
-blogRouter.get("/:id", async (c) => {
+blogRouter.delete("/:id", authMiddleware, rateLimit("post", 10, byUser), async (c) => {
   const id = c.req.param("id");
-  const prisma = new PrismaClient({
-    datasourceUrl: c.env.DATABASE_URL,
-  }).$extends(withAccelerate());
+  if (!uuid.safeParse(id).success) return c.json({ error: "Post not found" }, 404);
+  const prisma = db(c.env.DATABASE_URL);
 
   try {
-    const post = await prisma.post.findFirst({
-      where: {
-        id: id,
-      },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        createdAt: true,
-        author: {
-          select: {
-            name: true,
-          },
-        },
-        tags: {
-      select: {
-        name: true
-      }
-    },
-        _count: {
-      select: { likes: true }
-    },
-    likes: {
-      where: {
-        userId: c.get("userId")
-      }    },
-    
-      },
-    });
-    c.status(200);
-    return c.json({ post });
+    const existing = await prisma.post.findUnique({ where: { id }, select: { authorId: true } });
+    if (!existing) return c.json({ error: "Post not found" }, 404);
+    if (existing.authorId !== c.get("userId")) {
+      return c.json({ error: "You are not allowed to delete this post" }, 403);
+    }
+    await prisma.post.delete({ where: { id } });
+    return c.json({ message: "Post deleted" });
   } catch (e) {
-    console.error("Error fetching post", e);
-    c.status(500);
-    return c.json({ error: "Failed to fetch post" });
+    console.error("Error deleting post", e);
+    return c.json({ error: "Failed to delete post" }, 500);
   }
 });
 
-blogRouter.post("/like/:id", rateLimit("like", 60, byUser), async (c) => {
+blogRouter.post("/like/:id", authMiddleware, rateLimit("like", 60, byUser), async (c) => {
   const postId = c.req.param("id");
+  if (!uuid.safeParse(postId).success) return c.json({ error: "Post not found" }, 404);
   const userId = c.get("userId");
-  const prisma = new PrismaClient({ datasourceUrl: c.env.DATABASE_URL }).$extends(withAccelerate());
+  const prisma = db(c.env.DATABASE_URL);
 
   try {
-    const existingLike = await prisma.like.findUnique({
-      where: { userId_postId: { userId, postId } }
-    });
+    const post = await prisma.post.findUnique({ where: { id: postId }, select: { id: true } });
+    if (!post) return c.json({ error: "Post not found" }, 404);
 
+    const existingLike = await prisma.like.findUnique({
+      where: { userId_postId: { userId, postId } },
+    });
     if (existingLike) {
       await prisma.like.delete({ where: { id: existingLike.id } });
-      return c.json({ message: "Unliked" });
+    } else {
+      await prisma.like.create({ data: { userId, postId } });
     }
-    await prisma.like.create({ data: { userId, postId } });
-    return c.json({ message: "Liked" });
+    const likeCount = await prisma.like.count({ where: { postId } });
+    return c.json({ liked: !existingLike, likeCount });
   } catch (e) {
+    console.error("Error toggling like", e);
     return c.json({ error: "Action failed" }, 500);
   }
 });
@@ -228,19 +225,17 @@ blogRouter.post("/like/:id", rateLimit("like", 60, byUser), async (c) => {
 const SUMMARY_INPUT_CHARS = 6000;
 const SUMMARY_CACHE_SECONDS = 7 * 24 * 60 * 60;
 
-const plainText = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-
 const sha256Hex = async (text: string) => {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 };
 
-blogRouter.post("/summarize/:id", rateLimit("summarize", 5, byUser), async (c) => {
+blogRouter.post("/summarize/:id", authMiddleware, rateLimit("summarize", 5, byUser), async (c) => {
   const id = c.req.param("id");
-  const prisma = new PrismaClient({ datasourceUrl: c.env.DATABASE_URL }).$extends(withAccelerate());
+  if (!uuid.safeParse(id).success) return c.json({ error: "Post not found" }, 404);
 
-  const post = await prisma.post.findUnique({ where: { id }, select: { content: true } });
-  if (!post) return c.json({ error: "Not found" }, 404);
+  const post = await db(c.env.DATABASE_URL).post.findUnique({ where: { id }, select: { content: true } });
+  if (!post) return c.json({ error: "Post not found" }, 404);
 
   if (!c.env.AI) {
     console.error("AI Binding missing in wrangler.toml");
