@@ -19,7 +19,7 @@ function App() {
         <Suspense
           fallback={
             <div className="min-h-screen flex items-center justify-center bg-stone-50">
-              <Loader2 className="w-8 h-8 animate-spin text-stone-400" aria-label="Loading page" />
+              <Loader2 className="w-8 h-8 animate-spin text-stone-500" aria-label="Loading page" />
             </div>
           }
         >

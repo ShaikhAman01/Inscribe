@@ -139,11 +139,11 @@ const BlogPost = ({ blog }: { blog: Blog }) => {
             </div>
             <button
               onClick={handleLike}
-              aria-label={isLiked ? "Unlike this story" : "Like this story"}
+              aria-label={`Like this story, ${likes} ${likes === 1 ? "like" : "likes"}`}
               aria-pressed={isLiked}
               className={`flex shrink-0 items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 ${
                 isLiked
-                  ? "bg-red-50 border-red-200 text-red-500 shadow-sm"
+                  ? "bg-red-50 border-red-200 text-red-600 shadow-sm"
                   : "bg-white border-stone-200 text-stone-500 hover:border-stone-300 hover:text-stone-700"
               }`}
             >

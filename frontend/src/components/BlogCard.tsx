@@ -59,7 +59,7 @@ const BlogCard = ({
         )}
 
         {/* Footer: Read Time */}
-        <div className="text-stone-400 text-xs font-bold pt-4 flex items-center uppercase tracking-widest">
+        <div className="text-stone-500 text-xs font-bold pt-4 flex items-center uppercase tracking-widest">
           <Clock className="h-3.5 w-3.5 mr-2" aria-hidden="true" />
           {`${readMinutes} min read`}
         </div>

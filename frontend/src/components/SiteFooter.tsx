@@ -72,7 +72,7 @@ const SiteFooter = () => (
         <p className="text-xs font-medium text-stone-500">
           &copy; {new Date().getFullYear()} Inscribe. Code released under the MIT License.
         </p>
-        <p className="text-xs font-semibold text-stone-500 flex items-center gap-1 bg-stone-100 px-3 py-1.5 rounded-full border border-stone-200/40">
+        <p className="text-xs font-semibold text-stone-600 flex items-center gap-1 bg-stone-100 px-3 py-1.5 rounded-full border border-stone-200/40">
           Made with <Heart className="h-3 w-3 text-red-500 fill-red-500" aria-label="love" /> by{" "}
           <a
             href={AUTHOR_URL}

@@ -148,7 +148,8 @@ const Publish = () => {
     <div className="min-h-screen bg-stone-50">
       <style>{containerStyle}</style>
       <Appbar />
-      <main className="max-w-5xl mx-auto p-6 space-y-6">
+      <main id="main" tabIndex={-1} className="max-w-5xl mx-auto p-6 space-y-6 focus:outline-none">
+        <h1 className="sr-only">{editId ? "Edit story" : "Write a story"}</h1>
         <div className="bg-white rounded-lg shadow-sm p-6 max-w-5xl">
           <TitleInput
             title={title}

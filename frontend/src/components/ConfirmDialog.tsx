@@ -1,5 +1,7 @@
+import { createPortal } from "react-dom";
 import React, { useEffect, useId, useRef } from "react";
 import { Loader2, Trash2, X } from "lucide-react";
+import { useDialogFocus } from "../hooks/useDialogFocus";
 
 interface ConfirmDialogProps {
   isVisible: boolean;
@@ -27,6 +29,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   const panelRef = useRef<HTMLFormElement>(null);
   const titleId = useId();
   const descriptionId = useId();
+  useDialogFocus(panelRef, isVisible);
 
   useEffect(() => {
     if (!isVisible) return;
@@ -39,7 +42,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   if (!isVisible) return null;
 
-  return (
+  // Portal to <body>: the sticky header uses backdrop-blur, which would clip a fixed overlay.
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -62,7 +66,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           type="button"
           aria-label="Close dialog"
           disabled={busy}
-          className="absolute top-3 right-3 text-stone-400 hover:bg-stone-100 hover:text-stone-900 rounded-lg w-8 h-8 inline-flex justify-center items-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
+          className="absolute top-3 right-3 text-stone-500 hover:bg-stone-100 hover:text-stone-900 rounded-lg w-8 h-8 inline-flex justify-center items-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
           onClick={onClose}
         >
           <X className="w-4 h-4" aria-hidden="true" />
@@ -97,7 +101,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           </button>
         </div>
       </form>
-    </div>
+    </div>,
+    document.body
   );
 };
 

@@ -1,5 +1,7 @@
+import { createPortal } from "react-dom";
 import React, { useEffect, useRef } from "react";
 import { LogOut, X } from "lucide-react";
+import { useDialogFocus } from "../hooks/useDialogFocus";
 
 interface ModalProps {
   isVisible: boolean;
@@ -9,6 +11,7 @@ interface ModalProps {
 
 const Modal: React.FC<ModalProps> = ({ isVisible, onClose, onConfirm }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(modalRef, isVisible);
 
   useEffect(() => {
     if (!isVisible) return;
@@ -27,7 +30,8 @@ const Modal: React.FC<ModalProps> = ({ isVisible, onClose, onConfirm }) => {
 
   if (!isVisible) return null;
 
-  return (
+  // Portal to <body>: the sticky header uses backdrop-blur, which would clip a fixed overlay.
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -42,7 +46,7 @@ const Modal: React.FC<ModalProps> = ({ isVisible, onClose, onConfirm }) => {
         <button
           type="button"
           aria-label="Close modal"
-          className="absolute top-3 right-3 text-stone-400 hover:bg-stone-100 hover:text-stone-900 rounded-lg w-8 h-8 inline-flex justify-center items-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
+          className="absolute top-3 right-3 text-stone-500 hover:bg-stone-100 hover:text-stone-900 rounded-lg w-8 h-8 inline-flex justify-center items-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900"
           onClick={onClose}
         >
           <X className="w-4 h-4" aria-hidden="true" />
@@ -73,7 +77,8 @@ const Modal: React.FC<ModalProps> = ({ isVisible, onClose, onConfirm }) => {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

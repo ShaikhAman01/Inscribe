@@ -16,7 +16,7 @@ const Blog = () => {
   return (
     <div>
       <Appbar />
-      <main className="mb-10">
+      <main id="main" tabIndex={-1} className="mb-10 focus:outline-none">
         {loading ? (
           <BlogPostSkeleton />
         ) : notFound || !blog ? (

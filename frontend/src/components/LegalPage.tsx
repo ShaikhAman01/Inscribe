@@ -15,7 +15,7 @@ const LegalPage = ({ title, updated, intro, children }: LegalPageProps) => {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Appbar />
-      <main className="flex-grow px-5 pt-12 sm:pt-16">
+      <main id="main" tabIndex={-1} className="flex-grow px-5 pt-12 sm:pt-16 focus:outline-none">
         <article className="max-w-2xl mx-auto">
           <p className="text-sm font-bold uppercase tracking-widest text-stone-500">Last updated {updated}</p>
           <h1 className="mt-3 text-4xl font-black text-stone-900 tracking-tight">{title}</h1>

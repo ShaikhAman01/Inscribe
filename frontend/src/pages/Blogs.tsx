@@ -25,9 +25,12 @@ const Blogs = () => {
     <div className="min-h-screen bg-stone-50/50 flex flex-col">
       <Appbar searchTerm={searchTerm} onSearch={handleSearch} />
 
-      <main className="flex justify-center py-6 sm:py-10 px-4 flex-grow">
+      <main id="main" tabIndex={-1} className="flex justify-center py-6 sm:py-10 px-4 flex-grow focus:outline-none">
         <div className="grid grid-cols-12 gap-10 max-w-7xl w-full">
           <div className="col-span-12 lg:col-span-8 space-y-6">
+            <h1 className="text-3xl font-black text-stone-900 tracking-tight break-words">
+              {query ? `Results for "${query}"` : "Latest stories"}
+            </h1>
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => <BlogSkeleton key={i} />)
             ) : (
@@ -71,9 +74,9 @@ const Blogs = () => {
                     <div className="bg-stone-50 p-6 rounded-full mb-6">
                       <SearchX className="w-12 h-12 text-stone-300" aria-hidden="true" />
                     </div>
-                    <h3 className="text-2xl font-black text-stone-900 tracking-tight">
+                    <h2 className="text-2xl font-black text-stone-900 tracking-tight">
                       {error ? "Couldn't load stories" : "No stories found"}
-                    </h3>
+                    </h2>
                     <p className="text-stone-500 mt-2 max-w-xs">
                       {error
                         ? "Something went wrong on our side. Please refresh to try again."

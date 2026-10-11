@@ -70,7 +70,7 @@ const Comments = ({ postId }: { postId: string }) => {
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           placeholder="Share your thoughts..."
-          className="w-full p-3 border-b border-stone-200 focus:border-stone-900 focus:outline-none transition-colors duration-150 resize-none bg-transparent placeholder-stone-400"
+          className="w-full p-3 border-b border-stone-200 focus:border-stone-900 focus:outline-none transition-colors duration-150 resize-none bg-transparent placeholder-stone-500"
           rows={2}
           maxLength={500}
         />
@@ -84,7 +84,7 @@ const Comments = ({ postId }: { postId: string }) => {
             {isSubmitting ? "Posting..." : "Post Comment"}
           </button>
           {newComment.length > 0 && (
-            <span className="text-xs font-bold text-stone-400 tracking-wider">
+            <span className="text-xs font-bold text-stone-500 tracking-wider">
               {newComment.length}/500
             </span>
           )}
@@ -106,7 +106,7 @@ const Comments = ({ postId }: { postId: string }) => {
           ))}
         </div>
       ) : comments.length === 0 ? (
-        <div className="flex flex-col items-center text-center py-10 text-stone-400">
+        <div className="flex flex-col items-center text-center py-10 text-stone-500">
           <MessageCircle className="w-8 h-8 mb-3 text-stone-300" aria-hidden="true" />
           <p className="font-bold text-stone-500">No comments yet</p>
           <p className="text-sm mt-1">Be the first to share your thoughts.</p>
@@ -128,7 +128,7 @@ const Comments = ({ postId }: { postId: string }) => {
                       onClick={() => handleDelete(comment.id)}
                       disabled={deletingId === comment.id}
                       aria-label={`Delete comment by ${comment.author.name}`}
-                      className="p-1.5 rounded-full text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
+                      className="p-1.5 rounded-full text-stone-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
                     >
                       {deletingId === comment.id ? (
                         <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
