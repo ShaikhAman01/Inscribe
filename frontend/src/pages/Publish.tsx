@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Appbar from "../components/Appbar";
-import { ToastContainer, useToast } from "../components/Toast";
+import { ToastContainer } from "../components/Toast";
+import { useToast } from "../hooks/useToast";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { toast } from "sonner";
 

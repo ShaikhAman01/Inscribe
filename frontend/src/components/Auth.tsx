@@ -2,7 +2,8 @@ import { SignupInput } from "@shaikhaman/medium-common";
 import axios from "axios";
 import { ChangeEvent, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ToastContainer, useToast } from "./Toast";
+import { ToastContainer } from "./Toast";
+import { useToast } from "../hooks/useToast";
 import { Eye, EyeOff, User, Mail, Lock, Loader2 } from "lucide-react";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;

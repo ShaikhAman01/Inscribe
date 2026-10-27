@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import * as dotenv from 'dotenv';
 
-declare const process: { exit(code?: number): void };
+declare const process: { env: Record<string, string | undefined>; exit(code?: number): void };
 
 dotenv.config();
 

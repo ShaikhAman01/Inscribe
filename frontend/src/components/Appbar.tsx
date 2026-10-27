@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Avatar } from "./BlogCard";
-import { ToastContainer, useToast } from "./Toast";
+import { ToastContainer } from "./Toast";
+import { useToast } from "../hooks/useToast";
 import SearchBar from "./SearchBar";
 import SkipLink from "./SkipLink";
 import Modal from "./Modal";
